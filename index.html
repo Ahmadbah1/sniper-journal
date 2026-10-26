@@ -1,0 +1,1564 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#050706">
+<title>Sniper Journal — journal de trading</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta property="og:title" content="Sniper Journal">
+<meta property="og:description" content="Journal de trading avec bouclier anti-tilt, import MT4/MT5 et suivi de challenge prop firm.">
+<meta property="og:image" content="logo-dark.png">
+<script>(function(){var t=null;try{t=localStorage.getItem('ts_theme')}catch(e){}if(t!=='light'&&t!=='dark')t=(window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches)?'light':'dark';document.documentElement.setAttribute('data-theme',t);try{var l=localStorage.getItem('ts_lang');if(l!=='en'&&l!=='fr')l=((navigator.language||'fr').toLowerCase().indexOf('en')===0)?'en':'fr';document.documentElement.setAttribute('lang',l)}catch(e){}})();</script>
+<style>
+:root{color-scheme:dark;--bg:#050706;--panel:#0d1210;--panel-2:#151b18;--line:#232c27;--text:#f2f5f3;--muted:#8d9a93;--gold:#00c27a;--green:#2fd68a;--red:#ff5c5c;--orange:#e0a43a;--hdr:rgba(5,7,6,.94);--chart:#8d9a93;--r:16px;--safe:env(safe-area-inset-bottom,0px);--on-accent:#04100a}
+:root[data-theme="light"]{color-scheme:light;--bg:#f5f7f6;--panel:#ffffff;--panel-2:#edf1ef;--line:#d6ddd9;--text:#0b100d;--muted:#56635c;--gold:#00935c;--green:#0f8a52;--red:#d12f2f;--orange:#a9740f;--hdr:rgba(245,247,246,.94);--chart:#56635c;--on-accent:#ffffff}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+:root{padding-top:env(safe-area-inset-top,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{background:var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;padding-bottom:calc(150px + var(--safe))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--hdr);z-index:25}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;padding:12px 16px;background:var(--hdr);border-bottom:1px solid var(--line);backdrop-filter:blur(10px)}
+h1{margin:0;font-size:1.05rem;color:var(--gold)}
+main{padding:16px;max-width:1000px;margin:0 auto}
+.tab{display:none}.tab.active{display:block}
+.card,.panel,.trade-card,.guard{background:var(--panel);border:1px solid var(--line);border-radius:var(--r)}
+.panel,.trade-card{padding:14px;margin-bottom:14px}
+.card{padding:14px}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0 18px}
+@media(min-width:760px){.cards{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.cl{color:var(--muted);font-size:.78rem;margin-bottom:6px}
+.cv{font-size:1.15rem;font-weight:900}
+.good{color:var(--green)}.bad{color:var(--red)}.warn{color:var(--orange)}
+h2{color:var(--gold);margin:18px 0 10px;font-size:1rem}
+h3{margin:0 0 10px;font-size:.95rem}
+label{display:block;color:var(--muted);font-size:.85rem;margin:12px 0 6px}
+input,select,textarea,button{width:100%;border:1px solid var(--line);background:var(--panel-2);color:var(--text);border-radius:12px;padding:12px;font:inherit}
+textarea{min-height:90px;resize:vertical}
+button{cursor:pointer;font-weight:800}
+button:disabled{opacity:.4;cursor:not-allowed}
+.pri{border-color:var(--gold);color:var(--gold)}
+.dng{border-color:var(--red);color:var(--red)}
+.grn{border-color:var(--green);color:var(--green)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media(max-width:600px){.g3{grid-template-columns:1fr}}
+.guard{padding:14px;margin-bottom:14px;border-left:5px solid var(--green)}
+.guard.warn{border-left-color:var(--orange)}.guard.danger{border-left-color:var(--red)}
+.gt{font-weight:900;color:var(--gold);margin-bottom:10px}
+.gg{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:.88rem;font-weight:700}
+.gg div{padding:8px;background:var(--panel-2);border-radius:8px;text-align:center}
+.gm{margin-top:10px;font-weight:800;text-align:center;padding:8px;border-radius:8px}
+fieldset.chk{border:1px solid var(--line);border-radius:12px;padding:12px;margin:12px 0;background:var(--panel-2)}
+.chk legend{color:var(--gold);font-weight:800;padding:0 6px}
+.chk label{display:flex;align-items:center;gap:10px;margin:8px 0;color:var(--text)}
+.chk input{width:22px;height:22px;accent-color:var(--gold)}
+.score{display:inline-block;padding:6px 12px;border-radius:999px;font-weight:900;font-size:.85rem;border:1px solid var(--line)}
+.pnlp{margin-top:8px;padding:10px;border-radius:10px;font-weight:900;text-align:center;background:var(--panel-2);border:1px dashed var(--line)}
+.toolbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.toolbar select,.toolbar button{width:auto;min-width:120px}
+.cw{position:relative;overflow:hidden}
+canvas{width:100%;display:block}
+#tip{position:absolute;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:.8rem;pointer-events:none;display:none;white-space:nowrap}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);font-size:.88rem}
+th{color:var(--muted);font-size:.8rem}
+.bd{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.b{padding:5px 8px;border-radius:999px;font-size:.75rem;font-weight:800;border:1px solid var(--line);background:var(--panel-2)}
+.b.long{color:var(--green)}.b.short{color:var(--red)}.b.gold{color:var(--gold)}.b.viol{color:var(--red);border-color:var(--red)}
+.trade-card{border-left:5px solid var(--line)}
+.trade-card.win{border-left-color:var(--green)}.trade-card.loss{border-left-color:var(--red)}.trade-card.open{border-left-color:var(--gold)}
+.tt{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.meta{color:var(--muted);font-size:.82rem}
+.tr{display:flex;justify-content:space-between;margin-top:10px;font-weight:900}
+.thumb{width:100%;max-height:180px;object-fit:cover;border-radius:12px;border:1px solid var(--line);margin-top:10px;cursor:pointer}
+.notes{color:var(--muted);white-space:pre-wrap;margin-top:10px;font-size:.9rem}
+.acts{display:flex;gap:8px;margin-top:12px}
+.acts button{width:auto;padding:9px 14px}
+nav{position:fixed;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(6,1fr);gap:4px;padding:8px 8px calc(8px + var(--safe));background:var(--hdr);border-top:1px solid var(--line);z-index:30}
+nav button{padding:10px 2px;font-size:.72rem;border-radius:10px}
+nav button.active{border-color:var(--gold);color:var(--gold)}
+#fab{position:fixed;right:16px;bottom:calc(86px + var(--safe));width:56px;height:56px;border-radius:50%;font-size:1.5rem;color:var(--on-accent);background:var(--gold);border:none;z-index:40;padding:0}
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.72);padding:16px;z-index:60}
+.modal.show{display:flex}
+.mb{width:min(100%,700px);max-height:85vh;overflow:auto;padding:14px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r)}
+.mb img{width:100%;border-radius:12px}
+.hidden{display:none!important}
+#toast{position:fixed;left:50%;bottom:calc(150px + var(--safe));transform:translateX(-50%);background:#000;color:#fff;border:1px solid var(--line);padding:12px 16px;border-radius:12px;opacity:0;pointer-events:none;transition:.2s;z-index:80;max-width:calc(100vw - 32px);text-align:center;font-weight:600}
+#toast.show{opacity:1;pointer-events:auto}
+#toast .undo{margin-left:10px;padding:4px 10px;width:auto;background:var(--gold);color:var(--on-accent);border:none;border-radius:6px}
+.muted{color:var(--muted)}.small{font-size:.85rem}.empty{padding:24px;text-align:center;color:var(--muted)}
+.hm{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:8px}
+.hh{font-size:.7rem;color:var(--muted);text-align:center;font-weight:700}
+.hc{aspect-ratio:1;border-radius:6px;background:var(--panel-2);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;cursor:pointer;border:1px solid transparent;color:var(--muted)}
+.hc.today{border-color:var(--gold)}.hc.e{background:transparent;cursor:default}
+.hc.win{background:rgba(47,214,138,.4);color:var(--text)}.hc.loss{background:rgba(255,92,92,.4);color:var(--text)}.hc.flat{background:rgba(139,148,158,.25)}
+.pb{height:10px;background:var(--panel-2);border-radius:999px;overflow:hidden;margin-top:6px}
+.pf{height:100%;background:var(--gold)}
+
+.auth-screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:100;padding:16px;padding-top:calc(16px + env(safe-area-inset-top,0px));overflow:auto}
+.auth-box{width:min(100%,420px);padding:24px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r)}
+.auth-box h1{text-align:center;font-size:1.4rem}
+.link{background:none;border:none;color:var(--gold);text-decoration:underline;padding:8px 0;font-size:.88rem;font-weight:600}
+.icon-btn{width:auto;padding:6px 10px;font-size:.8rem;border-radius:8px}
+.plan-badge{padding:4px 8px;border-radius:999px;font-weight:800;font-size:.72rem;border:1px solid var(--line)}
+.plan-badge.free{color:var(--muted)}.plan-badge.premium{color:var(--gold);border-color:var(--gold)}
+.lock-overlay{position:relative;overflow:hidden;min-height:70px}
+.lock-overlay::after{content:'🔒 PREMIUM';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--bg) 88%,transparent);color:var(--gold);font-weight:900;letter-spacing:1px;backdrop-filter:blur(2px);border-radius:var(--r);cursor:pointer}
+.btn-premium{border-color:var(--gold);color:var(--gold);background:linear-gradient(135deg,rgba(0,194,122,.22),rgba(0,194,122,.06))}
+#print{display:none}
+@media print{#app,.modal,#toast,#authScreen{display:none!important}#print{display:block!important;color:#000;background:#fff;padding:12px}body{background:#fff;padding:0}body::before{display:none}#print table{width:100%;border-collapse:collapse;font-size:.75rem}#print th,#print td{border:1px solid #ccc;padding:4px 6px;color:#000}#print .sg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0}#print .sb{border:1px solid #ccc;padding:6px;border-radius:6px}}
+.sep{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.85rem;margin:14px 0}
+.sep::before,.sep::after{content:"";flex:1;height:1px;background:var(--line)}
+.social{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:10px}
+.social button{display:flex;align-items:center;justify-content:center;height:52px;padding:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips label{display:inline-flex;align-items:center;gap:6px;margin:0;padding:6px 10px;border:1px solid var(--line);border-radius:999px;color:var(--text);font-size:.82rem}
+.chips input{width:18px;height:18px;padding:0;accent-color:var(--gold)}
+.bar{height:10px;background:var(--panel-2);border-radius:999px;overflow:hidden;margin:6px 0 12px}
+.bar i{display:block;height:100%;border-radius:999px}
+
+.avatar{width:36px;height:36px;border-radius:50%;padding:0;background:var(--gold);color:var(--on-accent);font-weight:900;border:none;display:flex;align-items:center;justify-content:center;flex:none}
+.avatar.big{width:52px;height:52px;font-size:1.3rem}
+.modal.sheet{align-items:flex-end;padding:0}
+.sheet .mb{width:min(100%,520px);border-radius:20px 20px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom,0px))}
+.acc-head{display:flex;gap:14px;align-items:center;margin-bottom:16px}
+.acc-head strong{word-break:break-all}
+.logout-btn{margin-top:10px;background:transparent;border-color:var(--red);color:var(--red)}
+.landing{min-height:100vh;background:radial-gradient(1100px 480px at 50% -120px,rgba(0,194,122,.16),transparent),var(--bg)}
+.ld-bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;display:flex;justify-content:space-between;align-items:center;padding:10px 16px;background:var(--hdr);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.ld-bar button{width:auto;padding:8px 16px;font-size:.85rem}
+.ld-wrap{max-width:1000px;margin:0 auto;padding:0 16px}
+.ld-hero{padding:40px 0 20px;text-align:center}
+.ld-eyebrow{display:inline-block;padding:5px 12px;border:1px solid var(--line);border-radius:999px;color:var(--gold);font-size:.76rem;font-weight:800;background:var(--panel)}
+.ld-hero h2{font-size:clamp(2rem,8vw,3.4rem);line-height:1.08;margin:18px 0 14px;color:var(--text)}
+.ld-hero h2 em{font-style:normal;color:var(--gold)}
+.ld-sub{color:var(--muted);max-width:620px;margin:0 auto 22px;font-size:1.02rem}
+.ld-cta{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.ld-cta button{width:auto;padding:13px 24px;font-size:1rem}
+.ld-cta .main{background:var(--gold);color:var(--on-accent);border:none}
+.ld-mock{max-width:460px;margin:30px auto 0;text-align:left;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.ld-chips{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.ld-chips div{background:var(--panel-2);border-radius:10px;padding:8px;text-align:center;font-size:.72rem;color:var(--muted)}
+.ld-chips b{display:block;font-size:1rem;color:var(--text)}
+.ld-sec{padding:34px 0}
+.ld-sec h3{font-size:1.55rem;text-align:center;margin:0 0 6px}
+.ld-sec .lead{text-align:center;color:var(--muted);margin:0 auto 22px;max-width:560px}
+.ld-grid{display:grid;gap:14px;grid-template-columns:1fr}
+@media(min-width:760px){.ld-steps{grid-template-columns:repeat(3,1fr)}.ld-feat{grid-template-columns:repeat(3,1fr)}}
+.ld-feat{grid-template-columns:1fr 1fr}
+@media(min-width:760px){.ld-feat{grid-template-columns:repeat(3,1fr)}}
+.ld-price{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.ld-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.ld-card h4{margin:0 0 6px;font-size:1rem}
+.ld-card p{margin:0;color:var(--muted);font-size:.88rem}
+.ld-num{width:28px;height:28px;border-radius:50%;background:var(--gold);color:var(--on-accent);display:inline-flex;align-items:center;justify-content:center;font-weight:900;margin-right:8px}
+.ld-ill{margin-top:12px;padding:10px;background:var(--panel-2);border-radius:12px}
+.mk{display:flex;justify-content:space-between;padding:6px 9px;background:var(--panel);border-radius:8px;margin-top:6px;font-size:.8rem;font-weight:700}
+.ld-fi{font-size:1.5rem;margin-bottom:6px}
+.ld-amt{font-size:1.5rem;font-weight:900;color:var(--gold);margin:4px 0}
+.ld-amt small{font-size:.8rem;color:var(--muted);font-weight:600}
+.ld-card.hot{border-color:var(--gold)}
+.ld-card ul{margin:10px 0 0;padding-left:18px;color:var(--muted);font-size:.85rem;line-height:1.7}
+.ld-card button{margin-top:12px}
+details.ld-q{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px}
+details.ld-q summary{cursor:pointer;font-weight:800}
+details.ld-q p{color:var(--muted);margin:8px 0 0;font-size:.92rem}
+.ld-foot{border-top:1px solid var(--line);padding:24px 0 40px;color:var(--muted);font-size:.8rem}
+.ld-cta2{text-align:center;padding:30px 16px;margin:10px 0 0;background:linear-gradient(135deg,rgba(0,194,122,.14),transparent);border:1px solid var(--line);border-radius:var(--r)}
+
+.logo-light{display:none}
+:root[data-theme="light"] .logo-light{display:inline-block}
+:root[data-theme="light"] .logo-dark{display:none}
+.hdr-logo{display:flex;align-items:center;gap:10px}
+.hdr-logo img{height:34px;width:auto}
+.hdr-logo b{display:block;font-weight:900;letter-spacing:.2em;font-size:.92rem;line-height:1.1}
+.hdr-logo small{display:block;letter-spacing:.42em;font-size:.55rem;color:var(--gold);font-weight:800}
+.ld-logo{width:min(240px,62vw);height:auto;margin:0 auto 8px}
+.auth-logo{text-align:center;margin-bottom:6px}.auth-logo img{width:150px;height:auto}
+.tgl{width:auto;padding:8px 12px;font-size:.95rem}
+.ld-foot a,#authConsent a{color:var(--gold)}
+#tutoBox .dots{display:flex;gap:6px;justify-content:center;margin:16px 0}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--line)}.dot.on{background:var(--gold)}
+#legalBody h4{color:var(--gold);margin:14px 0 4px}#legalBody p,#legalBody li{color:var(--muted);margin:4px 0}
+#aiOut h4{margin:14px 0 4px;color:var(--gold)}
+</style>
+</head>
+<body>
+<div id="landing" class="landing hidden">
+<div class="ld-bar"><div class="hdr-logo"><img class="logo-dark" src="mark-dark.png" alt=""><img class="logo-light" src="mark-light.png" alt=""><div><b>SNIPER</b><small>JOURNAL</small></div></div><div style="display:flex;gap:8px;align-items:center"><button id="ldLang" class="tgl" aria-label="Changer de langue">EN</button><button id="ldTheme" class="tgl" aria-label="Changer de thème">🌓</button><button data-go="login" class="pri">Se connecter</button></div></div>
+<div class="ld-wrap">
+<section class="ld-hero">
+<img class="ld-logo logo-dark" src="logo-dark.png" alt="Sniper Journal"><img class="ld-logo logo-light" src="logo-light.png" alt="Sniper Journal"><br><span class="ld-eyebrow">Journal de trading · MT4/MT5 · Mobile Money</span>
+<h2>Trade avec <em>discipline</em>.<br>Prouve ton edge.</h2>
+<p class="ld-sub">Journalise chaque trade, bloque le tilt avant qu’il ne coûte ton compte et suis ton challenge prop firm. Abonne-toi en Orange Money ou MTN MoMo.</p>
+<div class="ld-cta"><button class="main" data-go="signup">Créer mon compte</button><button data-go="guest">Essayer sans compte</button></div>
+<p class="small muted" style="margin-top:10px">Gratuit jusqu’à 30 trades · aucun paiement pour commencer</p>
+<div class="card ld-mock"><div class="cl">Exemple d’aperçu · capital du compte</div><div class="cv good" style="font-size:1.6rem">5 214,00 $</div>
+<svg viewBox="0 0 320 110" width="100%" style="display:block;margin-top:8px"><defs><linearGradient id="lg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--green);stop-opacity:.35"/><stop offset="1" style="stop-color:var(--green);stop-opacity:0"/></linearGradient></defs><line x1="0" y1="88" x2="320" y2="88" style="stroke:var(--gold)" stroke-dasharray="5 4"/><path d="M0 92 L40 84 L80 90 L120 68 L160 74 L200 48 L240 56 L280 28 L320 16 L320 110 L0 110Z" fill="url(#lg)"/><polyline points="0,92 40,84 80,90 120,68 160,74 200,48 240,56 280,28 320,16" fill="none" style="stroke:var(--green)" stroke-width="3" stroke-linejoin="round"/></svg>
+<div class="ld-chips"><div><b class="good">58 %</b>Winrate</div><div><b>1,9</b>Profit factor</div><div><b class="premium">82 %</b>Discipline</div></div></div>
+</section>
+
+<section class="ld-sec"><h3>Comment ça marche</h3><p class="lead">Trois gestes simples pour passer d’un trader qui subit à un trader qui progresse.</p>
+<div class="ld-grid ld-steps">
+<div class="ld-card"><h4><span class="ld-num">1</span>Enregistre tes trades</h4><p>À la main en 20 secondes, ou importe ton historique MetaTrader. Ajoute une capture TradingView.</p><div class="ld-ill"><div class="mk"><span>EURUSD · LONG</span><span class="good">+2,0R</span></div><div class="mk"><span>XAUUSD · SHORT</span><span class="bad">−1,0R</span></div><div class="mk"><span>US100 · LONG</span><span class="good">+1,5R</span></div></div></div>
+<div class="ld-card"><h4><span class="ld-num">2</span>Respecte ton plan</h4><p>Le bouclier bloque l’enregistrement quand tu dépasses tes limites du jour. Checklist avant chaque entrée.</p><div class="ld-ill"><div class="mk"><span>Trades</span><span>1 / 2</span></div><div class="mk"><span>Perte du jour</span><span class="warn">18 $ / 25 $</span></div><div class="mk"><span>Cooldown</span><span class="good">OK</span></div></div></div>
+<div class="ld-card"><h4><span class="ld-num">3</span>Analyse et corrige</h4><p>Vois ce que chaque erreur t’a vraiment coûté, par émotion, setup, session et jour.</p><div class="ld-ill"><div class="mk"><span>SL déplacé</span><span class="bad">−84 $</span></div><div class="mk"><span>Entrée trop tôt</span><span class="bad">−52 $</span></div><div class="mk"><span>Revenge trade</span><span class="bad">−31 $</span></div></div></div>
+</div><p class="small muted" style="text-align:center;margin-top:10px">Chiffres des illustrations donnés à titre d’exemple.</p></section>
+
+<section class="ld-sec"><h3>Tout ce qu’il faut pour un trading rigoureux</h3><p class="lead">Pensé pour les traders de prop firm et de comptes financés.</p>
+<div class="ld-grid ld-feat">
+<div class="ld-card"><div class="ld-fi">🛡️</div><h4>Bouclier anti-tilt</h4><p>Limite de trades, perte max, pertes consécutives et pause obligatoire.</p></div>
+<div class="ld-card"><div class="ld-fi">🏁</div><h4>Challenge prop firm</h4><p>Objectif de profit, drawdown, perte du jour et jours restants.</p></div>
+<div class="ld-card"><div class="ld-fi">⚠️</div><h4>Coût des erreurs</h4><p>Étiquette tes erreurs et vois combien chacune te coûte.</p></div>
+<div class="ld-card"><div class="ld-fi">📥</div><h4>Import MT4 / MT5</h4><p>Charge ton rapport d’historique : R calculé avec ton stop-loss.</p></div>
+<div class="ld-card"><div class="ld-fi">📚</div><h4>Playbook</h4><p>Documente tes setups et compare leurs performances.</p></div>
+<div class="ld-card"><div class="ld-fi">📈</div><h4>Stats et calendrier</h4><p>Courbe d’equity, distribution des R, expectancy, profit factor.</p></div>
+</div></section>
+
+<section class="ld-sec"><h3>Tarifs en FCFA</h3><p class="lead">Commence gratuitement. Passe Premium quand tu en as besoin, en Orange Money ou MTN MoMo.</p>
+<div class="ld-grid ld-price">
+<div class="ld-card"><h4>Gratuit</h4><div class="ld-amt">0 <small>FCFA</small></div><ul><li>30 trades</li><li>3 captures</li><li>Bouclier anti-tilt</li><li>Import MT4/MT5</li></ul><button data-go="signup">Commencer</button></div>
+<div class="ld-card hot"><h4>Mensuel</h4><div class="ld-amt">10 000 <small>FCFA / mois</small></div><ul><li>Tout en illimité</li><li>Toutes les analyses</li><li>Challenge prop firm</li><li>Export PDF</li></ul><button class="pri" data-go="signup">Choisir</button></div>
+<div class="ld-card"><h4>Annuel</h4><div class="ld-amt">120 000 <small>FCFA / an</small></div><ul><li>Tout le Premium</li><li>Un seul paiement par an</li></ul><button data-go="signup">Choisir</button></div>
+<div class="ld-card"><h4>À vie</h4><div class="ld-amt">500 000 <small>FCFA, une fois</small></div><ul><li>Tout le Premium</li><li>Accès sans date de fin</li></ul><button data-go="signup">Choisir</button></div>
+</div><p class="small muted" style="text-align:center;margin-top:10px">Tu crées d’abord ton compte, puis tu paies depuis l’application.</p></section>
+
+<section class="ld-sec"><h3>Questions fréquentes</h3><p class="lead"></p>
+<details class="ld-q"><summary>Mes données sont-elles privées ?</summary><p>Avec un compte, tes trades sont enregistrés dans ton espace personnel : chaque utilisateur ne voit que ses propres données. En mode invité, tout reste sur ton appareil.</p></details>
+<details class="ld-q"><summary>Comment payer ?</summary><p>Depuis l’application, choisis une offre : tu es redirigé vers une page de paiement sécurisée où tu choisis Orange Money ou MTN Mobile Money. Ton compte passe en Premium automatiquement.</p></details>
+<details class="ld-q"><summary>Puis-je importer mes trades MetaTrader ?</summary><p>Oui. Exporte ton historique en rapport HTML (ou CSV) depuis MT4 ou MT5 et charge-le dans les réglages.</p></details>
+<details class="ld-q"><summary>Est-ce que l’application me dit quoi trader ?</summary><p>Non. C’est un journal et un outil de discipline : il ne donne aucun signal ni conseil en investissement.</p></details>
+</section>
+
+<div class="ld-cta2"><h3 style="margin:0 0 6px">Prêt à trader avec méthode ?</h3><p class="muted" style="margin:0 0 14px">Crée ton compte en moins d’une minute.</p><div class="ld-cta"><button class="main" data-go="signup">Créer mon compte</button></div></div>
+<footer class="ld-foot"><p>Sniper Journal est un outil de journalisation et d’analyse. Il ne fournit aucun conseil en investissement. Le trading comporte un risque de perte en capital, et les performances passées ne garantissent pas les résultats futurs.</p><p class="small"><a href="#" data-legal="terms">Conditions</a> · <a href="#" data-legal="privacy">Confidentialité</a> · <a href="#" data-legal="legal">Mentions légales</a> · <a href="#" data-legal="refund">Remboursements</a></p>
+<p>© 2026 Sniper Journal</p></footer>
+</div></div>
+<section id="authScreen" class="auth-screen hidden"><div class="auth-box"><button id="authBack" class="link" style="padding:0 0 8px">← Retour</button><div class="auth-logo"><img class="logo-dark" src="logo-dark.png" alt="Sniper Journal"><img class="logo-light" src="logo-light.png" alt="Sniper Journal"></div><p class="muted" style="text-align:center;margin:6px 0 16px">Journal de trading professionnel</p>
+<label for="authEmail">Email</label><input type="email" id="authEmail" autocomplete="email" placeholder="trader@exemple.com">
+<label for="authPassword">Mot de passe</label><input type="password" id="authPassword" autocomplete="current-password" placeholder="••••••••">
+<div id="pwdConfirm" class="hidden"><label for="authPassword2">Confirmer</label><input type="password" id="authPassword2" autocomplete="new-password" placeholder="••••••••"></div>
+<div id="authCaptcha" style="margin-top:12px"></div>
+<p id="authConsent" class="small muted hidden" data-notr style="margin:10px 0 0"></p>
+<button id="authSubmit" class="pri" style="margin-top:14px">Se connecter</button>
+<button id="authForgot" class="link">Mot de passe oublié ?</button>
+<button id="authSwitch" class="link">Pas de compte ? Créer un compte</button>
+<div class="sep"><span>ou continuer avec</span></div>
+<div class="social"><button type="button" data-oauth="google" aria-label="Continuer avec Google (Gmail)"><svg viewBox="0 0 48 48" width="22" height="22"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.2 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.2 5.5-4.7 7.2l7.6 5.9c4.4-4.1 6.9-10.1 6.9-17.6z"/><path fill="#FBBC05" d="M10.5 28.7c-.5-1.4-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C.9 16.4 0 20.1 0 24s.9 7.6 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.6-5.9c-2.1 1.4-4.8 2.3-7.6 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg></button><button type="button" data-oauth="github" aria-label="Continuer avec GitHub"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.100 3.300 9.400 7.900 10.900.6.100.8-.2.8-.6v-2c-3.200.7-3.900-1.500-3.900-1.500-.5-1.300-1.300-1.700-1.300-1.700-1-.7.1-.7.1-.7 1.200.1 1.800 1.200 1.800 1.200 1 1.800 2.700 1.300 3.400 1 .1-.8.400-1.300.7-1.600-2.600-.3-5.300-1.300-5.300-5.700 0-1.300.5-2.300 1.200-3.100-.1-.3-.5-1.500.1-3.100 0 0 1-.3 3.200 1.200a11 11 0 0 1 5.800 0c2.200-1.500 3.200-1.200 3.200-1.200.6 1.600.2 2.800.1 3.100.8.800 1.200 1.800 1.200 3.100 0 4.400-2.700 5.400-5.300 5.700.4.400.8 1.100.8 2.200v3.300c0 .3.2.7.8.6A11.500 11.500 0 0 0 23.500 12C23.500 5.700 18.300.5 12 .5z"/></svg></button></div>
+<button id="authGuest">👤 Mode invité (local, 30 trades max)</button>
+<div id="authError" class="bad small" style="margin-top:10px;text-align:center"></div></div></section>
+<div id="app" class="hidden">
+<header><div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><div class="hdr-logo"><img class="logo-dark" src="mark-dark.png" alt=""><img class="logo-light" src="mark-light.png" alt=""><div><b>SNIPER</b><small>JOURNAL</small></div></div><div style="display:flex;align-items:center;gap:10px"><span id="planBadge" class="plan-badge free">FREE</span><button id="btnAccount" class="avatar" aria-label="Mon compte"><span id="avatarLetter">?</span></button></div></div></header>
+<main>
+<section id="tab-add" class="tab active">
+  <div id="guardPanel" class="guard">
+    <div class="gt">🛡️ Bouclier Anti-Tilt</div>
+    <div class="gg"><div id="gT"></div><div id="gL"></div><div id="gC"></div><div id="gD"></div></div>
+    <div id="gM" class="gm" style="display:none"></div>
+  </div>
+  <form id="tradeForm" class="panel">
+    <h2 id="formTitle" style="margin-top:0">➕ Nouveau trade</h2>
+    <div class="g2"><div><label for="date">Date</label><input type="date" id="date" required></div><div><label for="time">Heure</label><input type="time" id="time" required></div></div>
+    <label for="pair">Paire</label>
+    <input type="text" id="pair" list="pairList" placeholder="EURUSD, XAUUSD…" required>
+    <datalist id="pairList"><option value="EURUSD"><option value="GBPUSD"><option value="USDJPY"><option value="XAUUSD"><option value="US100"><option value="US30"><option value="BTCUSD"></datalist>
+    <div class="g2"><div><label for="direction">Direction</label><select id="direction"><option value="LONG">LONG</option><option value="SHORT">SHORT</option></select></div><div><label for="session">Session</label><select id="session"><option value="Londres">Londres</option><option value="New York">New York</option><option value="Asie">Asie</option></select></div></div>
+    <div class="g2"><div><label for="setup">Setup</label><select id="setup"><option value="Pinbar">Pinbar</option><option value="Engulfing">Engulfing</option><option value="AR Sweep">AR Sweep</option><option value="FVG">FVG</option><option value="4H">4H</option><option value="Autre">Autre</option></select></div><div><label for="quality">Qualité</label><select id="quality"><option value="A+">A+</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="F">F</option></select></div></div>
+    <div class="g2"><div><label for="rPlanned">R planifié</label><input type="text" id="rPlanned" inputmode="decimal" placeholder="2, 3"></div><div><label for="tags">Tags (virgules)</label><input type="text" id="tags" placeholder="news, zone-htf"></div></div>
+    <fieldset class="chk"><legend>🎯 Checklist pré-trade</legend>
+      <label><input type="checkbox" id="chk_htf"> HTF aligné (4H/Daily)</label>
+      <label><input type="checkbox" id="chk_liq"> Liquidité prise (sweep)</label>
+      <label><input type="checkbox" id="chk_setup"> Setup clair (A+ / A)</label>
+      <label><input type="checkbox" id="chk_news"> Pas de news impactante</label>
+      <label><input type="checkbox" id="chk_calm"> Émotion calme / confiant</label>
+    </fieldset>
+    <div id="score" class="score">Score : 0/5</div>
+    <div class="g2" style="margin-top:14px"><div><label for="emotion">Émotion</label><select id="emotion"><option value="Calme">Calme</option><option value="Confiant">Confiant</option><option value="Stressé">Stressé</option><option value="FOMO">FOMO</option><option value="Revenge">Revenge</option><option value="Fatigué">Fatigué</option></select></div><div><label for="plan">Plan respecté ?</label><select id="plan"><option value="OUI">OUI</option><option value="NON">NON</option><option value="PARTIEL">PARTIEL</option></select></div></div>
+    <label for="status">Statut</label>
+    <select id="status"><option value="open">🟡 Ouvert</option><option value="closed">🟢/🔴 Fermé</option><option value="be">⚪ Breakeven</option><option value="partial">🟠 Partiel</option><option value="canceled">⛔ Annulé</option></select>
+    <label for="resultR">Résultat (R)</label>
+    <input type="text" id="resultR" inputmode="decimal" placeholder="3, -1, 1.5">
+    <div id="pnlp" class="pnlp"></div>
+    <label for="image">📸 Capture</label>
+    <input type="file" id="image" accept="image/*">
+    <img id="imgPrev" class="thumb hidden" alt="Aperçu">
+    <button type="button" id="rmImg" class="hidden dng" style="margin-top:8px">🗑️ Retirer l’image</button>
+    <fieldset class="chk"><legend>⚠️ Erreurs commises</legend><div id="mistakes" class="chips"></div></fieldset>
+    <label for="notes">📝 Notes</label>
+    <textarea id="notes" placeholder="Contexte, erreur, leçon…"></textarea>
+    <div class="g2" style="margin-top:14px"><button type="button" id="btnReset">♻️ Reset</button><button type="submit" id="btnSave" class="pri">💾 ENREGISTRER</button></div>
+    <button type="button" id="btnOverride" class="hidden dng" style="margin-top:8px">⚠️ Logger quand même (hors garde-fou)</button>
+  </form>
+</section>
+
+<section id="tab-stats" class="tab">
+  <div class="toolbar"><select id="filterStats"><option value="all">Tout</option><option value="week">Semaine</option><option value="month">Mois</option><option value="year">Année</option></select><button id="btnWeek">📋 Résumé</button></div>
+  <h2>🖥️ Compte (global)</h2><div id="accCards" class="cards"></div>
+  <h2>🏆 Challenge prop firm</h2><div id="challenge" class="panel" data-premium></div>
+  <h2>📊 Période</h2><div id="perCards" class="cards"></div>
+  <h2>📈 Courbe d’equity</h2><div class="panel cw"><canvas id="eq"></canvas><div id="tip"></div></div>
+  <h2>📊 Distribution des R</h2><div class="panel" data-premium><canvas id="rd"></canvas></div>
+  <h2>🗓️ Calendrier</h2>
+  <div class="panel" data-premium><div class="g3" style="grid-template-columns:auto 1fr auto;align-items:center"><button id="hmPrev" style="width:auto">◀</button><strong id="hmLabel" style="color:var(--gold);text-align:center"></strong><button id="hmNext" style="width:auto">▶</button></div><div class="hm" id="hm"></div></div>
+  <h2>🧠 Comportement</h2><div id="behCards" class="cards"></div>
+  <h2>🎯 Objectifs</h2><div id="objs" class="panel" data-premium></div>
+  <h2>📊 PnL par émotion</h2><div id="emoCards" class="cards"></div>
+  <h2>📊 Analyse transversale</h2><div id="tables" data-premium></div>
+</section>
+
+<section id="tab-journal" class="tab">
+  <div class="toolbar"><select id="filterJournal"><option value="all">Tout</option><option value="week">Semaine</option><option value="month">Mois</option><option value="year">Année</option></select></div>
+  <button id="btnImportJ" style="margin-bottom:12px">📥 Importer des trades (MT4/MT5, TradingView)</button>
+  <div id="journalList"></div>
+</section>
+
+<section id="tab-psycho" class="tab">
+  <h2>🧠 Analyse psycho (semaine)</h2><div id="emoStats" class="cards"></div>
+  <div class="panel"><h3>Revue de la semaine</h3><p id="rvLabel" class="muted small"></p>
+    <label for="rvDom">Émotion dominante</label><select id="rvDom"><option value="">—</option><option value="Calme">Calme</option><option value="Confiant">Confiant</option><option value="Stressé">Stressé</option><option value="FOMO">FOMO</option><option value="Revenge">Revenge</option><option value="Fatigué">Fatigué</option></select>
+    <label for="rvBest">Meilleur trade</label><input type="text" id="rvBest">
+    <label for="rvWorst">Pire trade</label><input type="text" id="rvWorst">
+    <label for="rvLesson">Leçon principale</label><textarea id="rvLesson"></textarea>
+    <button id="saveReview" class="pri" style="margin-top:14px">💾 Enregistrer</button></div>
+  <h2>🤖 Rapport IA hebdomadaire</h2>
+  <div class="panel"><p class="small muted" style="margin-top:0">Analyse automatique de ta semaine (trades, émotions, erreurs, discipline). Les données de la semaine, hors notes et captures, sont envoyées au service d’IA pour générer le rapport. Réservé à Premium.</p>
+  <label for="aiWeek">Période</label><select id="aiWeek"><option value="current">Semaine en cours</option><option value="last">Semaine dernière</option></select>
+  <button id="aiGen" class="btn-premium" style="margin-top:12px">✨ Générer le rapport</button>
+  <div id="aiOut" data-notr style="margin-top:14px"></div></div>
+  <h2>📚 Historique</h2><div id="rvList"></div>
+</section>
+
+<section id="tab-playbook" class="tab" data-ptab><h2>📚 Playbook</h2>
+  <div class="panel"><h3>Ajouter un setup</h3><label for="pbName">Nom</label><input type="text" id="pbName" placeholder="Ex : Sweep + OB H1"><label for="pbDesc">Description</label><textarea id="pbDesc" placeholder="Conditions d’entrée, contexte…"></textarea><button id="pbAdd" class="pri" style="margin-top:14px">➕ Ajouter au playbook</button></div>
+  <div id="pbList"></div></section>
+
+<section id="tab-admin" class="tab"><h2>🛠️ Administration</h2>
+<div id="admCards" class="cards"></div>
+<div class="toolbar"><input type="search" id="admSearch" placeholder="Rechercher un email…" style="flex:1;min-width:160px"><button id="admRefresh">Actualiser</button></div>
+<div id="admUsers"></div>
+<h2>Paiements récents</h2><div id="admPays" class="panel"></div>
+<p class="small muted">Montants en FCFA (les paiements de test sont inclus).</p></section>
+
+<section id="tab-settings" class="tab">
+  <h2>⚙️ Réglages prop firm</h2>
+  <div class="panel">
+    <div class="g2"><div><label for="capital">Capital ($)</label><input type="number" id="capital" min="1"></div><div><label for="riskPct">Risque / trade (%)</label><input type="number" id="riskPct" min="0" step="0.01"></div></div>
+    <div class="g3"><div><label for="ddMax">DD max (%)</label><input type="number" id="ddMax" min="0" step="0.01"></div><div><label for="dailyLossPct">Perte max / jour (%)</label><input type="number" id="dailyLossPct" min="0" step="0.01"></div><div><label for="maxTradesDay">Trades max / jour</label><input type="number" id="maxTradesDay" min="1" step="1"></div></div>
+    <div class="g2" data-premium><div><label for="dailyRGoal">Objectif R / jour</label><input type="number" id="dailyRGoal" step="0.1"></div><div><label for="weeklyRGoal">Objectif R / semaine</label><input type="number" id="weeklyRGoal" step="0.1"></div></div>
+    <div data-premium><h3 style="margin-top:18px">🏆 Challenge prop firm</h3>
+      <div class="g3"><div><label for="profitTargetPct">Objectif de profit (%)</label><input type="number" id="profitTargetPct" min="0" step="0.01"></div><div><label for="challengeDays">Durée (jours)</label><input type="number" id="challengeDays" min="0" step="1"></div><div><label for="challengeStart">Date de début</label><input type="date" id="challengeStart"></div></div></div>
+      <button id="saveSettings" class="pri" style="margin-top:14px">💾 Enregistrer</button>
+  </div>
+  <h2>👑 Premium</h2><div id="premiumPanel" class="panel"></div>
+  <h2>🔒 Sauvegarde</h2>
+  <div class="panel">
+    <p id="storageInfo" class="small muted"></p>
+    <div class="g2"><button id="exJson" class="grn">📤 JSON</button><button id="exCsv">📊 CSV</button><button id="exPdf" class="btn-premium">📄 PDF</button><button id="imBtn">📥 Importer (JSON)</button><button id="btnImportS" class="pri">📥 MT4/MT5 · TradingView</button></div>
+    <input type="file" id="imFile" class="hidden" accept=".json">
+    <p class="small muted">Les données restent dans ce navigateur. Exporte un JSON régulièrement : vider les données du site les efface.</p>
+  </div>
+<h2>📖 Aide et légal</h2><div class="panel"><div class="g2"><button id="btnTuto">📖 Revoir le tutoriel</button><button id="btnLegal">📄 Informations légales</button></div></div>
+  <h2>⚠️ Zone sensible</h2><div class="panel"><p class="small muted" style="margin-top:0">Tu peux supprimer ton compte et toutes tes données. Cette action est irréversible.</p><button id="btnDelAcc" class="dng">🗑️ Supprimer mon compte et mes données</button></div>
+</section>
+</main>
+
+<nav>
+  <button data-tab="tab-add" class="active">➕ Trade</button>
+  <button data-tab="tab-stats">📊 Stats</button>
+  <button data-tab="tab-journal">📓 Journal</button>
+  <button data-tab="tab-psycho">🧠 Psycho</button>
+  <button data-tab="tab-playbook">📚 Play</button>
+  <button data-tab="tab-settings">⚙️ Réglages</button>
+</nav>
+<button id="fab" title="Nouveau trade">＋</button>
+</div>
+
+<div id="sumModal" class="modal"><div class="mb"><h3>📋 Résumé</h3><textarea id="sumText" style="min-height:300px"></textarea><div class="acts"><button id="copySum" class="grn">📋 Copier</button><button id="closeSum">Fermer</button></div></div></div>
+<div id="imgModal" class="modal"><div class="mb"><img id="modalImg" alt="Capture"><div class="acts"><button id="closeImg">Fermer</button></div></div></div>
+<div id="accountModal" class="modal sheet"><div class="mb"><div class="acc-head"><div id="accAvatar" class="avatar big">?</div><div><strong id="accEmail"></strong><div id="accPlan" class="small muted"></div></div></div><button id="accAdmin" class="hidden" style="margin-bottom:10px">🛠️ Administration</button><button id="accUpgrade" class="btn-premium hidden">👑 Passer Premium</button><button id="accLang" style="margin-top:10px">🌐 English</button><button id="accTheme" style="margin-top:10px">☀️ Passer en thème clair</button><button id="accLogout" class="logout-btn">Se déconnecter</button><button id="accClose" class="link" style="width:100%;text-align:center;margin-top:6px">Fermer</button></div></div>
+<div id="pwModal" class="modal"><div class="mb"><h3>Nouveau mot de passe</h3><label for="pwNew">Nouveau mot de passe</label><input type="password" id="pwNew" autocomplete="new-password"><label for="pwNew2">Confirmer</label><input type="password" id="pwNew2" autocomplete="new-password"><div class="acts"><button id="pwSave" class="pri">Enregistrer le mot de passe</button></div></div></div>
+<div id="tutoModal" class="modal"><div class="mb" id="tutoBox" data-notr></div></div>
+<div id="legalModal" class="modal"><div class="mb" style="max-width:720px"><div id="legalTabs" class="acts" style="flex-wrap:wrap;margin-top:0" data-notr></div><div id="legalBody" data-notr style="margin-top:12px;font-size:.9rem"></div><div class="acts"><button id="closeLegal">Fermer</button></div></div></div>
+<div id="delModal" class="modal"><div class="mb" id="delBox" data-notr></div></div>
+<div id="premiumModal" class="modal"><div class="mb"><h3 style="color:var(--gold)">👑 Passe Premium</h3><div id="premiumBody"></div><div class="acts" style="margin-top:16px"><button id="closePremium">Fermer</button></div></div></div>
+<div id="importModal" class="modal"><div class="mb"><h3>📥 Importer des trades</h3>
+<label for="mtFile">📄 Fichier de trades (CSV, JSON, PDF, HTML)</label><input type="file" id="mtFile" accept=".csv,.txt,.htm,.html,.json,.pdf">
+<p class="small muted">Rapports MetaTrader 4/5 (HTML, CSV ou PDF), exports de courtier (CSV, JSON) ou sauvegarde de cette application (JSON). Les champs sont remplis automatiquement : paire, direction, date, heure, session, résultat en R (calculé avec ton stop-loss, sinon avec ton risque par trade) et RR prévu. Les trades déjà importés ne sont pas dupliqués.</p>
+<label for="tvFile">📈 TradingView (capture d’écran)</label><input type="file" id="tvFile" accept="image/*">
+<p class="small muted">TradingView ne fournit pas de fichier de trades. La capture est lue automatiquement (paire, direction, ratio risque/rendement lorsqu’ils sont visibles) puis jointe à un nouveau trade : vérifie les champs avant d’enregistrer.</p>
+<div class="acts"><button id="closeImport">Fermer</button></div></div></div>
+<div id="print"></div>
+<div id="toast"></div>
+
+<script>
+/*I18N-START*/
+const EN={"Journal de trading · MT4/MT5 · Mobile Money": "Trading journal · MT4/MT5 · Mobile Money", "Trade avec": "Trade with", "discipline": "discipline", "Prouve ton edge.": "Prove your edge.", "Journalise chaque trade, bloque le tilt avant qu’il ne coûte ton compte et suis ton challenge prop firm. Abonne-toi en Orange Money ou MTN MoMo.": "Record every trade, block tilt before it costs you your account, and monitor your prop-firm challenge. Subscribe with Orange Money or MTN MoMo.", "Se connecter": "Sign in", "Créer mon compte": "Create my account", "Essayer sans compte": "Try without an account", "Gratuit jusqu’à 30 trades · aucun paiement pour commencer": "Free up to 30 trades · no payment required to begin", "Exemple d’aperçu · capital du compte": "Illustrative preview · account capital", "Comment ça marche": "How it works", "Trois gestes simples pour passer d’un trader qui subit à un trader qui progresse.": "Three simple practices that turn a reactive trader into a progressing one.", "Enregistre tes trades": "Record your trades", "À la main en 20 secondes, ou importe ton historique MetaTrader. Ajoute une capture TradingView.": "Enter them manually in 20 seconds, or import your MetaTrader history. Attach a TradingView screenshot.", "Respecte ton plan": "Follow your plan", "Le bouclier bloque l’enregistrement quand tu dépasses tes limites du jour. Checklist avant chaque entrée.": "The shield prevents logging once your daily limits are exceeded. Complete a checklist before every entry.", "Analyse et corrige": "Analyse and correct", "Vois ce que chaque erreur t’a vraiment coûté, par émotion, setup, session et jour.": "See what each mistake has actually cost you, by emotion, setup, session and day.", "Chiffres des illustrations donnés à titre d’exemple.": "Figures in the illustrations are given as examples only.", "Tout ce qu’il faut pour un trading rigoureux": "Everything required for rigorous trading", "Pensé pour les traders de prop firm et de comptes financés.": "Designed for proprietary-firm and funded-account traders.", "Bouclier anti-tilt": "Anti-tilt shield", "Limite de trades, perte max, pertes consécutives et pause obligatoire.": "Trade limit, maximum loss, consecutive losses and a mandatory cooling-off period.", "Challenge prop firm": "Prop-firm challenge", "Objectif de profit, drawdown, perte du jour et jours restants.": "Profit target, drawdown, daily loss and remaining days.", "Coût des erreurs": "Cost of mistakes", "Étiquette tes erreurs et vois combien chacune te coûte.": "Tag your mistakes and see what each one costs.", "Import MT4 / MT5": "MT4 / MT5 import", "Charge ton rapport d’historique : R calculé avec ton stop-loss.": "Upload your history report: R is computed from your stop-loss.", "Documente tes setups et compare leurs performances.": "Document your setups and compare their performance.", "Stats et calendrier": "Statistics and calendar", "Courbe d’equity, distribution des R, expectancy, profit factor.": "Equity curve, R distribution, expectancy and profit factor.", "Tarifs en FCFA": "Pricing in FCFA", "Commence gratuitement. Passe Premium quand tu en as besoin, en Orange Money ou MTN MoMo.": "Start free of charge. Upgrade to Premium when required, via Orange Money or MTN MoMo.", "Gratuit": "Free", "3 captures": "3 screenshots", "Import MT4/MT5": "MT4/MT5 import", "Commencer": "Get started", "Mensuel": "Monthly", "FCFA / mois": "FCFA / month", "Tout en illimité": "Everything unlimited", "Toutes les analyses": "All analytics", "Export PDF": "PDF export", "Choisir": "Select", "Annuel": "Annual", "FCFA / an": "FCFA / year", "Tout le Premium": "All Premium features", "Un seul paiement par an": "A single payment per year", "À vie": "Lifetime", "FCFA, une fois": "FCFA, one-time", "Accès sans date de fin": "Access with no end date", "Tu crées d’abord ton compte, puis tu paies depuis l’application.": "You first create an account, then pay from within the application.", "Questions fréquentes": "Frequently asked questions", "Mes données sont-elles privées ?": "Are my data private?", "Avec un compte, tes trades sont enregistrés dans ton espace personnel : chaque utilisateur ne voit que ses propres données. En mode invité, tout reste sur ton appareil.": "With an account, your trades are stored in your personal space: each user can see only their own data. In guest mode, everything remains on your device.", "Comment payer ?": "How can I pay?", "Depuis l’application, choisis une offre : tu es redirigé vers une page de paiement sécurisée où tu choisis Orange Money ou MTN Mobile Money. Ton compte passe en Premium automatiquement.": "From within the application, select a plan: you are redirected to a secure payment page where you choose Orange Money or MTN Mobile Money. Your account is upgraded to Premium automatically.", "Puis-je importer mes trades MetaTrader ?": "Can I import my MetaTrader trades?", "Oui. Exporte ton historique en rapport HTML (ou CSV) depuis MT4 ou MT5 et charge-le dans les réglages.": "Yes. Export your history as an HTML (or CSV) report from MT4 or MT5 and upload it in the settings.", "Est-ce que l’application me dit quoi trader ?": "Does the application tell me what to trade?", "Non. C’est un journal et un outil de discipline : il ne donne aucun signal ni conseil en investissement.": "No. It is a journal and a discipline tool: it provides no signals and no investment advice.", "Prêt à trader avec méthode ?": "Ready to trade with method?", "Crée ton compte en moins d’une minute.": "Create your account in under a minute.", "Sniper Journal est un outil de journalisation et d’analyse. Il ne fournit aucun conseil en investissement. Le trading comporte un risque de perte en capital, et les performances passées ne garantissent pas les résultats futurs.": "Sniper Journal is a journaling and analysis tool. It does not provide investment advice. Trading involves a risk of capital loss, and past performance does not guarantee future results.", "← Retour": "← Back", "Journal de trading professionnel": "Professional trading journal", "Mot de passe": "Password", "Confirmer": "Confirm", "Pas de compte ? Créer un compte": "No account? Create one", "ou continuer avec": "or continue with", "👤 Mode invité (local, 30 trades max)": "👤 Guest mode (local, 30 trades maximum)", "Créer un compte": "Create an account", "Déjà un compte ? Se connecter": "Already have an account? Sign in", "Email et mot de passe requis": "Email and password are required", "Mot de passe : 6 caractères minimum": "Password: minimum of 6 characters", "Les mots de passe sont différents": "The passwords do not match", "✅ Compte créé. Vérifie ta boîte mail pour confirmer, puis connecte-toi.": "✅ Account created. Check your mailbox to confirm, then sign in.", "Erreur": "Error", "Cette méthode de connexion n’est pas encore activée.": "This sign-in method is not yet enabled.", "Changer de thème": "Toggle theme", "Changer de langue": "Change language", "trader@exemple.com": "trader@example.com", "Continuer avec Google (Gmail)": "Continue with Google (Gmail)", "Continuer avec GitHub": "Continue with GitHub", "Mon compte": "My account", "🛡️ Bouclier Anti-Tilt": "🛡️ Anti-Tilt Shield", "➕ Nouveau trade": "➕ New trade", "Nouveau trade": "New trade", "Heure": "Time", "Paire": "Pair", "Londres": "London", "Asie": "Asia", "Autre": "Other", "Qualité": "Quality", "R planifié": "Planned R", "Tags (virgules)": "Tags (comma-separated)", "🎯 Checklist pré-trade": "🎯 Pre-trade checklist", "HTF aligné (4H/Daily)": "Higher time frame aligned (4H/Daily)", "Liquidité prise (sweep)": "Liquidity taken (sweep)", "Setup clair (A+ / A)": "Clear setup (A+ / A)", "Pas de news impactante": "No high-impact news", "Émotion calme / confiant": "Calm / confident emotional state", "Score :": "Score:", "Émotion": "Emotion", "Calme": "Calm", "Confiant": "Confident", "Stressé": "Stressed", "Fatigué": "Fatigued", "Plan respecté ?": "Plan followed?", "OUI": "YES", "NON": "NO", "PARTIEL": "PARTIAL", "Statut": "Status", "🟡 Ouvert": "🟡 Open", "🟢/🔴 Fermé": "🟢/🔴 Closed", "⚪ Breakeven": "⚪ Break-even", "🟠 Partiel": "🟠 Partial", "⛔ Annulé": "⛔ Cancelled", "Résultat (R)": "Result (R)", "📸 Capture": "📸 Screenshot", "Capture": "Screenshot", "Aperçu": "Preview", "🗑️ Retirer l’image": "🗑️ Remove image", "⚠️ Erreurs commises": "⚠️ Mistakes made", "♻️ Reset": "♻️ Reset", "💾 ENREGISTRER": "💾 SAVE", "⚠️ Logger quand même (hors garde-fou)": "⚠️ Log anyway (outside the safeguard)", "Contexte, erreur, leçon…": "Context, mistake, lesson…", "Ex : Sweep + OB H1": "E.g. Sweep + OB H1", "Conditions d’entrée, contexte…": "Entry conditions, context…", "Entrée trop tôt": "Premature entry", "Entrée tardive": "Late entry", "SL déplacé": "Stop-loss moved", "Sans stop-loss": "No stop-loss", "Hors plan": "Outside the plan", "Sur-risque": "Excessive risk", "Pas de confirmation HTF": "No higher-time-frame confirmation", "Sortie prématurée": "Premature exit", "Tout": "All", "Semaine": "Week", "Mois": "Month", "Année": "Year", "📋 Résumé": "📋 Summary", "🖥️ Compte (global)": "🖥️ Account (overall)", "🏆 Challenge prop firm": "🏆 Prop-firm challenge", "📊 Période": "📊 Period", "📈 Courbe d’equity": "📈 Equity curve", "📊 Distribution des R": "📊 R distribution", "🗓️ Calendrier": "🗓️ Calendar", "🧠 Comportement": "🧠 Behaviour", "🎯 Objectifs": "🎯 Objectives", "📊 PnL par émotion": "📊 P&L by emotion", "📊 Analyse transversale": "📊 Cross-sectional analysis", "⚠️ Coût des erreurs": "⚠️ Cost of mistakes", "Coût des erreurs (par type)": "Cost of mistakes (by type)", "📥 Importer des trades (MT4/MT5, TradingView)": "📥 Import trades (MT4/MT5, TradingView)", "Capital compte": "Account capital", "PnL total": "Total P&L", "Trades total": "Total trades", "Marge DD restante": "Remaining drawdown margin", "PnL période": "Period P&L", "Winrate": "Win rate", "Profit Factor": "Profit factor", "DD en $": "Drawdown ($)", "Série actuelle": "Current streak", "Plan respecté": "Plan adherence", "Revenge": "Revenge trading", "Hors garde-fou": "Outside safeguard", "⚠️ Hors garde-fou": "⚠️ Outside safeguard", "Meilleure série W": "Best winning streak", "Pire série L": "Worst losing streak", "PnL": "P&L", "Catégorie": "Category", "Win%": "Win %", "Aucune donnée": "No data", "Par paire": "By pair", "Par setup": "By setup", "Par session": "By session", "Par qualité": "By quality", "Par jour": "By day", "Par heure": "By hour", "Jour": "Day", "Perte du jour": "Daily loss", "Ajoute des trades…": "Add trades…", "Capital initial": "Initial capital", "Pas de trades fermés": "No closed trades", "Janvier": "January", "Février": "February", "Mars": "March", "Avril": "April", "Mai": "May", "Juin": "June", "Juillet": "July", "Août": "August", "Septembre": "September", "Octobre": "October", "Novembre": "November", "Décembre": "December", "Lun": "Mon", "Mar": "Tue", "Mer": "Wed", "Jeu": "Thu", "Ven": "Fri", "Sam": "Sat", "Dim": "Sun", "Aucun trade": "No trade", "Profit": "Profit", "Jours restants": "Days remaining", "Jours tradés": "Days traded", "Objectif de profit": "Profit target", "Drawdown max": "Maximum drawdown", "🟢 EN COURS": "🟢 IN PROGRESS", "🏆 OBJECTIF ATTEINT": "🏆 TARGET REACHED", "🟠 DÉLAI DÉPASSÉ": "🟠 DEADLINE EXCEEDED", "🔴 ÉCHOUÉ : drawdown max atteint": "🔴 FAILED: maximum drawdown reached", "Définis la date de début du challenge dans Réglages pour compter les jours et ne suivre que les trades du challenge.": "Set the challenge start date in Settings to count days and to track only the challenge trades.", "ANNULÉ": "CANCELLED", "OUVERT": "OPEN", "RR prévu": "Planned RR", "✖ Voir tout le journal": "✖ View the entire journal", "Aucun trade. Clique sur ＋ pour commencer.": "No trades yet. Click ＋ to begin.", "Semaine du": "Week of", "Émotion :": "Emotion:", "Meilleur :": "Best:", "Pire :": "Worst:", "Leçon :": "Lesson:", "Aucune revue.": "No review yet.", "🧠 Analyse psycho (semaine)": "🧠 Psychological analysis (week)", "Revue de la semaine": "Weekly review", "Émotion dominante": "Dominant emotion", "Meilleur trade": "Best trade", "Pire trade": "Worst trade", "Leçon principale": "Main lesson", "💾 Enregistrer": "💾 Save", "📚 Historique": "📚 History", "Ajouter un setup": "Add a setup", "Nom": "Name", "➕ Ajouter au playbook": "➕ Add to playbook", "Aucun setup. Ajoute le premier.": "No setup yet. Add the first one.", "⚙️ Réglages prop firm": "⚙️ Prop-firm settings", "Capital ($)": "Capital ($)", "Risque / trade (%)": "Risk per trade (%)", "DD max (%)": "Max drawdown (%)", "Perte max / jour (%)": "Max daily loss (%)", "Trades max / jour": "Max trades per day", "Objectif R / jour": "Daily R target", "Objectif R / semaine": "Weekly R target", "Objectif de profit (%)": "Profit target (%)", "Durée (jours)": "Duration (days)", "Date de début": "Start date", "🔒 Sauvegarde": "🔒 Backup", "📥 Importer (JSON)": "📥 Import (JSON)", "📥 MT4/MT5 · TradingView": "📥 MT4/MT5 · TradingView", "Les données restent dans ce navigateur. Exporte un JSON régulièrement : vider les données du site les efface.": "Data remain in this browser. Export a JSON file regularly: clearing the site data erases them.", "⚙️ Enregistré": "⚙️ Saved", "🧠 Revue enregistrée": "🧠 Review saved", "🧠 Psycho": "🧠 Psych.", "📚 Play": "📚 Plays", "⚙️ Réglages": "⚙️ Settings", "📋 Copier": "📋 Copy", "Fermer": "Close", "👑 Passer Premium": "👑 Upgrade to Premium", "☀️ Passer en thème clair": "☀️ Switch to light theme", "🌙 Passer en thème sombre": "🌙 Switch to dark theme", "Se déconnecter": "Sign out", "👑 Passe Premium": "👑 Premium access", "📥 Importer des trades": "📥 Import trades", "Invité": "Guest", "Mode invité": "Guest mode", "👑 Premium à vie": "👑 Lifetime Premium", "👑 Premium jusqu’au": "👑 Premium until", "Plan gratuit": "Free plan", "Données stockées sur cet appareil uniquement": "Data stored on this device only", "Quitter le mode invité": "Leave guest mode", "👑 Premium actif": "👑 Premium active", "Toutes les fonctionnalités sont déverrouillées.": "All features are unlocked.", "Passe Premium pour tout débloquer.": "Upgrade to Premium to unlock everything.", "👑 Voir les avantages": "👑 View the benefits", "👑 Premium activé, merci !": "👑 Premium activated, thank you!", "☁️ Sync cloud multi-appareils": "☁️ Multi-device cloud synchronisation", "♾️ Trades et captures illimités": "♾️ Unlimited trades and screenshots", "📚 Playbook illimité": "📚 Unlimited playbook", "🗓️ Calendrier et distribution des R": "🗓️ Calendar and R distribution", "📊 Analyses avancées (paire, setup, jour, heure)": "📊 Advanced analytics (pair, setup, day, hour)", "📄 Export PDF": "📄 PDF export", "🎯 Objectifs R jour/semaine": "🎯 Daily/weekly R objectives", "10 000 FCFA / mois": "10,000 FCFA / month", "120 000 FCFA / an": "120,000 FCFA / year", "500 000 FCFA — accès à vie": "500,000 FCFA — lifetime access", "Paiement sécurisé par Orange Money ou MTN Mobile Money (via Notch Pay). Ton compte est activé automatiquement après paiement.": "Secure payment via Orange Money or MTN Mobile Money (through Notch Pay). Your account is activated automatically after payment.", "Crée un compte (ou connecte-toi) pour souscrire à Premium.": "Create an account (or sign in) to subscribe to Premium.", "Fonctionnalité :": "Feature:", "Cette fonctionnalité est réservée aux membres Premium.": "This feature is reserved for Premium members.", "Trades illimités": "Unlimited trades", "Captures illimitées": "Unlimited screenshots", "Limite de": "Limit of", "trades atteinte": "trades reached", "Perte journalière max atteinte.": "Maximum daily loss reached.", "2 pertes consécutives : stop pour aujourd’hui.": "Two consecutive losses: stop trading for today.", "Cooldown jusqu’à": "Cooldown until", "Trades :": "Trades:", "Perte :": "Loss:", "Série :": "Streak:", "⚠️ Attention, limites proches.": "⚠️ Caution: limits are close.", "💾 Local (invité)": "💾 Local (guest)", "⚠️ Local uniquement (sync échouée)": "⚠️ Local only (synchronisation failed)", "erreur réseau": "network error", "Aucun stockage disponible": "No storage available", "⚠️ Date et paire requises": "⚠️ Date and pair are required", "⚠️ Résultat R requis": "⚠️ Result in R is required", "⚠️ R invalide": "⚠️ Invalid R value", "✅ Enregistré (hors garde-fou)": "✅ Saved (outside the safeguard)", "✅ Trade enregistré": "✅ Trade saved", "❌ Sauvegarde échouée :": "❌ Save failed:", "🗑️ Trade supprimé": "🗑️ Trade deleted", "✅ Restauré": "✅ Restored", "↩️ Annuler": "↩️ Undo", "📤 JSON exporté": "📤 JSON exported", "📊 CSV exporté": "📊 CSV exported", "❌ JSON invalide": "❌ Invalid JSON", "❌ Champ \"trades\" manquant": "❌ The \"trades\" field is missing", "ℹ️ Limites du plan gratuit appliquées à l’import": "ℹ️ Free-plan limits applied to the import", "fusionné(s)": "merged", "importé(s)": "imported", "valide(s)": "valid", "rejeté(s)": "rejected", "OK = FUSIONNER avec l’existant": "OK = MERGE with existing data", "Annuler = REMPLACER tout": "Cancel = REPLACE everything", "Import :": "Import:", "Logger malgré le garde-fou ? Ce trade sera marqué comme violation.": "Log despite the safeguard? This trade will be flagged as a violation.", "Supprimer ce trade ?": "Delete this trade?", "📋 Copié": "📋 Copied", "Sélectionné : copie manuelle": "Selected: copy manually", "⚠️ Nom requis": "⚠️ Name is required", "📚 Setup ajouté": "📚 Setup added", "💰 Risque par trade :": "💰 Risk per trade:", "💰 Impact :": "💰 Impact:", "✏️ Modifier le trade": "✏️ Edit trade", "Modifier le trade": "Edit trade", "Rapport": "Report", "Généré le": "Generated on", "Période :": "Period:", "Dir": "Dir.", "RÉSUMÉ HEBDO": "WEEKLY SUMMARY", "Meilleur setup :": "Best setup:", "Émotion la + rentable :": "Most profitable emotion:", "Émotion la − rentable :": "Least profitable emotion:", "Série actuelle :": "Current streak:", "Violations garde-fou :": "Safeguard violations:", "En-têtes non reconnus (colonnes Symbol/Item, Type et Profit attendues).": "Headers not recognised (Symbol/Item, Type and Profit columns expected).", "⚠️ Aucun trade clôturé trouvé dans ce fichier": "⚠️ No closed trade found in this file", "détecté(s)": "detected", "ligne(s) ignorée(s)": "row(s) ignored", "Importer dans ton journal ?": "Import into your journal?", "(limite du plan gratuit atteinte)": "(free-plan limit reached)", "Importé MT4/MT5": "Imported from MT4/MT5", "📈 Capture ajoutée : complète les détails du trade": "📈 Screenshot added: complete the trade details", "📄 Fichier de trades (CSV, JSON, PDF, HTML)": "📄 Trade file (CSV, JSON, PDF, HTML)", "Rapports MetaTrader 4/5 (HTML, CSV ou PDF), exports de courtier (CSV, JSON) ou sauvegarde de cette application (JSON). Les champs sont remplis automatiquement : paire, direction, date, heure, session, résultat en R (calculé avec ton stop-loss, sinon avec ton risque par trade) et RR prévu. Les trades déjà importés ne sont pas dupliqués.": "MetaTrader 4/5 reports (HTML, CSV or PDF), broker exports (CSV, JSON) or a backup of this application (JSON). Fields are filled in automatically: pair, direction, date, time, session, result in R (computed from your stop-loss, otherwise from your risk per trade) and planned RR. Trades that have already been imported are not duplicated.", "📈 TradingView (capture d’écran)": "📈 TradingView (screenshot)", "TradingView ne fournit pas de fichier de trades. La capture est lue automatiquement (paire, direction, ratio risque/rendement lorsqu’ils sont visibles) puis jointe à un nouveau trade : vérifie les champs avant d’enregistrer.": "TradingView does not provide a trade file. The screenshot is read automatically (pair, direction and risk/reward ratio where visible) and attached to a new trade: please verify the fields before saving.", "📄 Lecture du PDF…": "📄 Reading the PDF…", "🔎 Lecture de la capture…": "🔎 Reading the screenshot…", "❌ Aucun trade reconnu dans ce fichier": "❌ No trade recognised in this file", "Lecture du PDF impossible : utilise le rapport HTML ou CSV.": "The PDF could not be read: please use the HTML or CSV report.", "✅ Capture lue : vérifie les champs avant d’enregistrer": "✅ Screenshot read: please verify the fields before saving", "Capture TradingView : champs détectés automatiquement, à vérifier.": "TradingView screenshot: fields detected automatically, to be verified.", "Chargement impossible (connexion ?)": "Loading failed (connection?)", "🛠️ Administration": "🛠️ Administration", "Utilisateurs": "Users", "Premium actifs": "Active Premium", "Gratuits": "Free users", "Revenus encaissés": "Revenue collected", "Rechercher un email…": "Search for an email…", "Actualiser": "Refresh", "+1 mois": "+1 month", "+1 an": "+1 year", "Retirer Premium": "Remove Premium", "Paiements récents": "Recent payments", "Aucun paiement": "No payment", "Aucun utilisateur": "No user", "Accès réservé aux administrateurs.": "Access restricted to administrators.", "Super administrateur": "Super administrator", "Inscrit le": "Registered on", "Offert : Premium prolongé": "Premium extended", "Retirer le Premium de cet utilisateur ?": "Remove Premium from this user?", "✅ Mis à jour": "✅ Updated", "Déjà à vie": "Already lifetime", "Chargement…": "Loading…", "Administrateur": "Administrator", "Premium": "Premium", "jusqu’au": "until", "Accepté": "Accepted", "En attente": "Pending", "Échoué": "Failed", "Montants en FCFA (les paiements de test sont inclus).": "Amounts in FCFA (test payments are included).", "Mot de passe oublié ?": "Forgot your password?", "Nouveau mot de passe": "New password", "Enregistrer le mot de passe": "Save password", "Conditions": "Terms", "Confidentialité": "Privacy", "Mentions légales": "Legal notice", "Remboursements": "Refunds", "📖 Aide et légal": "📖 Help and legal information", "📖 Revoir le tutoriel": "📖 Replay the tutorial", "📄 Informations légales": "📄 Legal information", "⚠️ Zone sensible": "⚠️ Sensitive area", "Tu peux supprimer ton compte et toutes tes données. Cette action est irréversible.": "You may delete your account and all of your data. This action is irreversible.", "🗑️ Supprimer mon compte et mes données": "🗑️ Delete my account and my data", "🤖 Rapport IA hebdomadaire": "🤖 Weekly AI report", "Analyse automatique de ta semaine (trades, émotions, erreurs, discipline). Les données de la semaine, hors notes et captures, sont envoyées au service d’IA pour générer le rapport. Réservé à Premium.": "Automated analysis of your week (trades, emotions, mistakes, discipline). The data of the week, excluding notes and screenshots, are sent to the AI service in order to generate the report. Reserved for Premium members.", "Période": "Period", "Semaine en cours": "Current week", "Semaine dernière": "Last week", "✨ Générer le rapport": "✨ Generate the report", "Annuler": "Cancel", "Rapport IA": "AI report"};
+const RXEN=[["^Limite de (\\d+) trades/jour atteinte\\.$", "Daily limit of \\1 trades reached."], ["^Importer les (\\d+) trade\\(s\\) du mode invité dans ton compte \\?$", "Import the \\1 trade(s) from guest mode into your account?"]].map(function(a){return [new RegExp(a[0]),a[1]]});
+let LANG=document.documentElement.getAttribute('lang')==='en'?'en':'fr';
+const LOC=()=>LANG==='en'?'en-GB':'fr-FR';
+const L=(fr,en)=>LANG==='en'?en:fr;
+let _enRx=null;
+try{_enRx=new RegExp('(?<![\\p{L}\\d])(?:'+Object.keys(EN).sort((a,b)=>b.length-a.length).map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')+')(?![\\p{L}\\d])','gu')}catch(e){_enRx=null}
+function T(s){
+  if(LANG!=='en'||s==null||s==='')return s;
+  const t=String(s),k=t.trim();
+  if(Object.prototype.hasOwnProperty.call(EN,k))return t.replace(k,()=>EN[k]);
+  for(const [r,v] of RXEN){if(r.test(t))return t.replace(r,v)}
+  return _enRx?t.replace(_enRx,m=>EN[m]):t;
+}
+const _cf=window.confirm.bind(window);window.confirm=m=>_cf(T(m));
+const _tr=new WeakMap(),_SKIP=new Set(['SCRIPT','STYLE','TEXTAREA','INPUT']),_AT=['placeholder','title','aria-label','alt'];
+const _MOC={childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:_AT};
+let _mo=null;
+function _skip(n){const p=n.parentElement;return !p||_SKIP.has(p.tagName)||!!p.closest('.notes,[data-notr]')}
+function trText(n){
+  if(LANG!=='en'||_skip(n))return;
+  const v=n.nodeValue;if(!v||!v.trim())return;
+  const r=_tr.get(n);if(r&&r.out===v)return;
+  const out=T(v);_tr.set(n,{src:v,out});if(out!==v)n.nodeValue=out;
+}
+function trAttrs(el){
+  if(!el||!el.getAttribute)return;
+  for(const a of _AT){
+    const v=el.getAttribute(a);if(v==null)continue;const k='data-fr-'+a;
+    if(LANG==='en'){let src=el.getAttribute(k);if(src==null||v!==T(src)){src=v;el.setAttribute(k,src)}const out=T(src);if(out!==v)el.setAttribute(a,out)}
+    else if(el.hasAttribute(k)){el.setAttribute(a,el.getAttribute(k));el.removeAttribute(k)}
+  }
+}
+function trTree(root){
+  if(root.nodeType===3){trText(root);return}
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),arr=[];let n;while((n=w.nextNode()))arr.push(n);
+  arr.forEach(trText);
+  trAttrs(root);if(root.querySelectorAll)root.querySelectorAll('[placeholder],[title],[aria-label],[alt]').forEach(trAttrs);
+}
+function untrTree(){
+  const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT),arr=[];let n;while((n=w.nextNode()))arr.push(n);
+  arr.forEach(x=>{const r=_tr.get(x);if(r&&x.nodeValue===r.out)x.nodeValue=r.src;_tr.delete(x)});
+  document.querySelectorAll('[placeholder],[title],[aria-label],[alt]').forEach(trAttrs);
+}
+function startMO(){
+  if(_mo||!window.MutationObserver)return;
+  _mo=new MutationObserver(ms=>{
+    if(LANG!=='en')return;
+    _mo.disconnect();
+    try{ms.forEach(m=>{
+      if(m.type==='characterData')trText(m.target);
+      else if(m.type==='attributes')trAttrs(m.target);
+      else m.addedNodes.forEach(nd=>{if(nd.nodeType===1||nd.nodeType===3)trTree(nd)})})}catch(e){}
+    _mo.observe(document.body,_MOC);
+  });
+  _mo.observe(document.body,_MOC);
+}
+function applyLang(l,silent){
+  LANG=l==='en'?'en':'fr';
+  document.documentElement.setAttribute('lang',LANG);
+  try{localStorage.setItem('ts_lang',LANG)}catch(e){}
+  document.title=LANG==='en'?'Sniper Journal — trading journal':'Sniper Journal — journal de trading';
+  const a=document.getElementById('accLang');if(a)a.textContent=LANG==='en'?'🌐 Français':'🌐 English';
+  const b=document.getElementById('ldLang');if(b)b.textContent=LANG==='en'?'FR':'EN';
+  if(LANG==='en')trTree(document.body);else untrTree();
+  if(typeof renderConsent==='function')renderConsent();
+  if(typeof renderTuto==='function'&&document.getElementById('tutoModal').classList.contains('show'))renderTuto();
+  if(typeof renderLegal==='function'&&document.getElementById('legalModal').classList.contains('show'))renderLegal();
+  if(typeof aiShow==='function'&&!silent){try{aiShow()}catch(e){}}
+  startMO();
+  if(!silent&&typeof renderAll==='function'&&!document.getElementById('app').classList.contains('hidden')){try{renderAll()}catch(e){}}
+}
+function toggleLang(){applyLang(LANG==='en'?'fr':'en')}
+/*I18N-END*/
+const $=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s));
+const uid=()=>crypto.randomUUID?crypto.randomUUID():'id-'+Date.now()+'-'+Math.random().toString(36).slice(2,10);
+const esc=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const fmtUSD=v=>new Intl.NumberFormat(LOC(),{style:'currency',currency:'USD',maximumFractionDigits:2}).format(v||0);
+const fmtDate=d=>{if(!d)return'';const x=new Date(d+'T00:00');return isNaN(x)?d:x.toLocaleDateString(LOC())};
+const localISO=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const todayISO=()=>localISO(new Date());
+const nowTime=()=>new Date().toTimeString().slice(0,5);
+const mkDT=t=>{const d=new Date(`${t.date}T${t.time||'00:00'}`);return isNaN(d)?new Date(t.createdAt||Date.now()):d};
+const sortT=a=>[...a].sort((x,y)=>mkDT(x)-mkDT(y));
+const startOfWeek=(d=new Date())=>{const x=new Date(d);x.setDate(x.getDate()-((x.getDay()+6)%7));x.setHours(0,0,0,0);return x};
+const weekKey=()=>localISO(startOfWeek());
+const num=v=>parseFloat(String(v??'').replace(',','.'));
+
+const SUPABASE_URL='https://kogksonhsvsslwtqlgae.supabase.co';
+const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvZ2tzb25oc3Zzc2x3dHFsZ2FlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI0Mzk4NzcsImV4cCI6MjEwODAxNTg3N30.tnwkqG5D1kRaF-HvLxJu2fGa3wAKcqI93laiH4zN-YY';
+const FREE_TRADE_LIMIT=30,FREE_IMAGE_LIMIT=3,FREE_PLAYBOOK_LIMIT=1;
+const DEF={capital:5000,riskPct:0.25,ddMax:3,dailyLossPct:0.5,maxTradesDay:2,dailyRGoal:2,weeklyRGoal:5,profitTargetPct:8,challengeDays:30,challengeStart:''};
+let state={plan:'free',premiumUntil:null,settings:{...DEF},trades:[],reviews:{},playbook:[],reports:{},onboarded:false,lastSync:null};
+let authMode='guest',session=null,sb=null,authView='login',loggedId=null,myRole='user';
+let filter='all',editId=null,curImg='',hmDate=new Date(),dayView=null,storageMsg='';
+
+/* ── Stockage : IndexedDB + repli localStorage + cloud Supabase ── */
+let _db=null;
+function getDB(){if(_db)return Promise.resolve(_db);return new Promise((res,rej)=>{try{const rq=indexedDB.open('ts_sniper_v5',1);rq.onupgradeneeded=e=>e.target.result.createObjectStore('kv');rq.onsuccess=()=>{_db=rq.result;res(_db)};rq.onerror=()=>rej(rq.error)}catch(e){rej(e)}})}
+const idbSet=async(k,v)=>{const d=await getDB();return new Promise((res,rej)=>{const tx=d.transaction('kv','readwrite');tx.objectStore('kv').put(v,k);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)})};
+const idbGet=async k=>{const d=await getDB();return new Promise((res,rej)=>{const rq=d.transaction('kv').objectStore('kv').get(k);rq.onsuccess=()=>res(rq.result);rq.onerror=()=>rej(rq.error)})};
+const idbDel=async k=>{const d=await getDB();return new Promise((res,rej)=>{const tx=d.transaction('kv','readwrite');tx.objectStore('kv').delete(k);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)})};
+const stateKey=()=>authMode==='cloud'&&session?.user?'state_'+session.user.id:'state_guest';
+const cloudPayload=()=>({settings:state.settings,trades:state.trades,reviews:state.reviews,playbook:state.playbook,reports:state.reports,onboarded:state.onboarded,lastSync:state.lastSync});
+async function saveState(){
+  state.lastSync=new Date().toISOString();
+  let ok=false;
+  try{await idbSet(stateKey(),state);ok=true}catch(e){}
+  if(!ok){try{localStorage.setItem('ts-v5-'+stateKey(),JSON.stringify(state));ok=true}catch(e){}}
+  storageMsg=ok?'💾 Local (invité)':'';
+  if(authMode==='cloud'&&session?.user&&sb){
+    try{
+      const {error}=await sb.from('user_data').upsert({user_id:session.user.id,state:cloudPayload(),updated_at:new Date().toISOString()});
+      if(error)throw error;
+      storageMsg='☁️ Cloud + local ✓';
+    }catch(e){storageMsg='⚠️ Local uniquement (sync échouée)';toast('⚠️ Sync cloud impossible : '+(e.message||'erreur réseau'),{duration:4500})}
+  }
+  updStorage();
+  if(!ok)throw new Error('Aucun stockage disponible');
+}
+async function loadLocal(){
+  let s=null;
+  try{s=await idbGet(stateKey())}catch(e){}
+  if(!s){try{s=JSON.parse(localStorage.getItem('ts-v5-'+stateKey()))}catch(e){}}
+  return s;
+}
+function mergeState(s){
+  if(!s)return;
+  state={...state,settings:{...DEF,...(s.settings||{})},trades:Array.isArray(s.trades)?s.trades:[],reviews:s.reviews||{},playbook:Array.isArray(s.playbook)?s.playbook:[],reports:s.reports||{},onboarded:!!s.onboarded,lastSync:s.lastSync||null};
+}
+function updStorage(){const el=$('#storageInfo');if(el)el.textContent='Stockage : '+(storageMsg||(authMode==='cloud'?'☁️ Cloud':'💾 Local'))}
+
+/* ── Premium ── */
+function isPremium(){if(state.plan!=='premium')return false;if(state.premiumUntil&&new Date(state.premiumUntil)<new Date())return false;return true}
+function requirePremium(f){if(isPremium())return true;showPremiumModal(f);return false}
+function showPremiumModal(f){
+  const perks='<ul style="line-height:1.9;padding-left:20px"><li>☁️ Sync cloud multi-appareils</li><li>♾️ Trades et captures illimités</li><li>📚 Playbook illimité</li><li>🗓️ Calendrier et distribution des R</li><li>📊 Analyses avancées (paire, setup, jour, heure)</li><li>📄 Export PDF</li><li>🎯 Objectifs R jour/semaine</li></ul>';
+  const pay=authMode==='cloud'
+    ?'<div style="display:grid;gap:8px;margin-top:8px"><button class="btn-premium" data-plan="monthly">10 000 FCFA / mois</button><button class="btn-premium" data-plan="yearly">120 000 FCFA / an</button><button class="btn-premium" data-plan="lifetime">500 000 FCFA — accès à vie</button></div><p class="small muted">Paiement sécurisé par Orange Money ou MTN Mobile Money (via Notch Pay). Ton compte est activé automatiquement après paiement.</p>'
+    :'<p class="small muted">Crée un compte (ou connecte-toi) pour souscrire à Premium.</p>';
+  $('#premiumBody').innerHTML=`<p class="muted">${f?`Fonctionnalité : <strong>${esc(f)}</strong>`:'Cette fonctionnalité est réservée aux membres Premium.'}</p>${perks}${pay}`;
+  $('#premiumBody').querySelectorAll('[data-plan]').forEach(b=>b.onclick=()=>startPayment(b.dataset.plan));
+  $('#premiumModal').classList.add('show');
+}
+async function startPayment(plan){
+  if(authMode!=='cloud'||!session?.access_token)return toast('⚠️ Connecte-toi d’abord');
+  $$('#premiumBody [data-plan]').forEach(b=>b.disabled=true);
+  try{
+    const r=await fetch(SUPABASE_URL+'/functions/v1/create-payment',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token,apikey:SUPABASE_ANON},body:JSON.stringify({plan})});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok||!d.payment_url)throw new Error(d.error||'Paiement indisponible');
+    try{localStorage.setItem('ts_pay_pending',String(Date.now()));localStorage.setItem('ts_pay_txn',d.transaction_id||'')}catch(e){}
+    window.location.href=d.payment_url;
+  }catch(e){toast('❌ '+e.message,{duration:4500});$$('#premiumBody [data-plan]').forEach(b=>b.disabled=false)}
+}
+async function checkPayment(){
+  let txn='';try{txn=localStorage.getItem('ts_pay_txn')||''}catch(e){}
+  if(!txn||authMode!=='cloud'||!session?.access_token)return;
+  try{
+    const r=await fetch(SUPABASE_URL+'/functions/v1/verify-payment',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token,apikey:SUPABASE_ANON},body:JSON.stringify({transaction_id:txn})});
+    const d=await r.json().catch(()=>({}));
+    if(d.status==='failed'){try{localStorage.removeItem('ts_pay_txn');localStorage.removeItem('ts_pay_pending')}catch(e){}toast('❌ Paiement non abouti',{duration:4500})}
+    else if(d.status==='accepted'){try{localStorage.removeItem('ts_pay_txn')}catch(e){}}
+  }catch(e){}
+}
+async function refreshPlan(){
+  if(authMode!=='cloud'||!session?.user||!sb)return false;
+  try{
+    await checkPayment();
+    const {data}=await sb.from('profiles').select('plan,premium_until').eq('id',session.user.id).maybeSingle();
+    if(!data)return false;
+    const was=isPremium();
+    state.plan=data.plan||'free';state.premiumUntil=data.premium_until;
+    updatePlanBadge();renderSettings();renderStats();
+    if(!was&&isPremium()){toast('👑 Premium activé, merci !',{duration:5000});$('#premiumModal').classList.remove('show');try{localStorage.removeItem('ts_pay_pending')}catch(e){}try{await saveState()}catch(e){}return true}
+  }catch(e){}
+  return false;
+}
+function watchPayment(){
+  let t0=0;try{t0=+localStorage.getItem('ts_pay_pending')||0}catch(e){}
+  if(!t0||Date.now()-t0>20*60000)return;
+  let n=0;const iv=setInterval(async()=>{n++;if(await refreshPlan()||n>40)clearInterval(iv)},5000);
+}
+function updatePlanBadge(){
+  const b=$('#planBadge');
+  if(isPremium()){b.textContent='👑 PREMIUM';b.className='plan-badge premium'}else{b.textContent='FREE';b.className='plan-badge free'}
+  $$('[data-premium]').forEach(el=>el.classList.toggle('lock-overlay',!isPremium()));
+}
+function renderPremiumPanel(){
+  $('#premiumPanel').innerHTML=isPremium()?'<p class="good"><strong>👑 Premium actif</strong></p><p class="muted small">Toutes les fonctionnalités sont déverrouillées.</p>':'<p class="muted">Passe Premium pour tout débloquer.</p><button class="btn-premium" id="seePremium">👑 Voir les avantages</button>';
+  const sp=$('#seePremium');if(sp)sp.onclick=()=>showPremiumModal();
+}
+function enforceFree(){
+  if(isPremium())return;
+  state.trades=state.trades.slice(0,FREE_TRADE_LIMIT);let n=0;
+  state.trades.forEach(t=>{if(t.image&&++n>FREE_IMAGE_LIMIT)t.image=''});
+  state.playbook=state.playbook.slice(0,FREE_PLAYBOOK_LIMIT);
+}
+function renderPlaybook(){
+  const l=$('#pbList');
+  if(!state.playbook.length){l.innerHTML='<div class="panel empty">Aucun setup. Ajoute le premier.</div>';return}
+  l.innerHTML=state.playbook.map(p=>`<div class="panel"><h3>${esc(p.name)}</h3><p class="muted">${esc(p.desc||'')}</p><div class="acts"><button class="dng" data-pbdel="${esc(p.id)}">🗑️</button></div></div>`).join('');
+  l.querySelectorAll('[data-pbdel]').forEach(b=>b.onclick=async()=>{state.playbook=state.playbook.filter(p=>p.id!==b.dataset.pbdel);try{await saveState()}catch(e){toast('❌ '+e.message)}renderPlaybook()});
+}
+
+/* ── Authentification ── */
+async function initSupabase(){
+  if(!SUPABASE_URL||!SUPABASE_ANON)return null;
+  if(!window.supabase){await new Promise(r=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';s.onload=r;s.onerror=r;document.head.appendChild(s)})}
+  return window.supabase?window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON):null;
+}
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme',t);try{localStorage.setItem('ts_theme',t)}catch(e){}
+  const m=document.querySelector('meta[name=theme-color]');if(m)m.content=t==='light'?'#f5f7f6':'#050706';
+  const b=$('#accTheme');if(b)b.textContent=t==='light'?'🌙 Passer en thème sombre':'☀️ Passer en thème clair';
+  if($('#tab-stats')&&$('#tab-stats').classList.contains('active'))renderStats();
+}
+function toggleTheme(){applyTheme(document.documentElement.getAttribute('data-theme')==='light'?'dark':'light')}
+function showAuth(){$('#landing').classList.remove('hidden');$('#authScreen').classList.add('hidden');$('#app').classList.add('hidden');window.scrollTo(0,0)}
+function openAuth(v){mountAuthCaptcha();renderConsent();if(authView!==v)switchAuthView();$('#authError').textContent='';$('#authScreen').classList.remove('hidden')}
+function closeAuth(){$('#authScreen').classList.add('hidden')}
+function showApp(){
+  $('#authScreen').classList.add('hidden');$('#landing').classList.add('hidden');$('#app').classList.remove('hidden');
+  $('#avatarLetter').textContent=((session?.user?.email||'Invité')[0]).toUpperCase();
+}
+/*FEAT2-START*/
+const TURNSTILE_SITEKEY='0x4AAAAAAFmA4ElhXWSN0Td4';
+const LEGAL_CFG={publisher:'',email:''};
+let tsAuthId=null,tsAuthToken='',tsDelId=null,tsDelToken='',tsFailed=false;
+function loadTurnstile(){
+  if(!TURNSTILE_SITEKEY)return Promise.resolve(false);
+  if(window.turnstile)return Promise.resolve(true);
+  return loadScript('https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit').then(()=>true).catch(()=>false);
+}
+const tsTheme=()=>document.documentElement.getAttribute('data-theme')==='light'?'light':'dark';
+function mountAuthCaptcha(){
+  if(!TURNSTILE_SITEKEY||tsAuthId!=null)return;
+  loadTurnstile().then(ok=>{if(!ok){tsFailed=true;return}if(tsAuthId!=null)return;tsAuthId=turnstile.render('#authCaptcha',{sitekey:TURNSTILE_SITEKEY,theme:tsTheme(),callback:t=>{tsAuthToken=t},'expired-callback':()=>{tsAuthToken=''},'error-callback':()=>{tsAuthToken=''}})});
+}
+function resetAuthCaptcha(){tsAuthToken='';if(tsAuthId!=null&&window.turnstile){try{turnstile.reset(tsAuthId)}catch(e){}}}
+function renderConsent(){
+  const e=document.getElementById('authConsent');if(!e)return;
+  e.innerHTML=L('En créant un compte, tu acceptes les <a href="#" data-legal="terms">Conditions d’utilisation</a> et la <a href="#" data-legal="privacy">Politique de confidentialité</a>.','By creating an account, you accept the <a href="#" data-legal="terms">Terms of Use</a> and the <a href="#" data-legal="privacy">Privacy Policy</a>.');
+}
+async function forgotPw(){
+  const email=$('#authEmail').value.trim(),err=$('#authError');
+  err.className='bad small';
+  if(!sb)return;
+  if(!email){err.textContent=L('Entre ton email d’abord.','Please enter your email address first.');return}
+  if(TURNSTILE_SITEKEY&&!tsAuthToken&&!tsFailed){err.textContent=L('Complète la vérification anti-robot','Please complete the anti-robot verification');return}
+  try{
+    const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname,...(tsAuthToken?{captchaToken:tsAuthToken}:{})});
+    if(error)throw error;
+    err.className='good small';err.textContent=L('✅ Si un compte existe pour cet email, un lien de réinitialisation vient d’être envoyé.','✅ If an account exists for this email address, a reset link has been sent.');
+  }catch(e){err.textContent=e.message||'Error'}
+  resetAuthCaptcha();
+}
+async function savePw(){
+  const a=$('#pwNew').value,b=$('#pwNew2').value;
+  if(a.length<6)return toast(L('Mot de passe : 6 caractères minimum','Password: minimum of 6 characters'));
+  if(a!==b)return toast(L('Les mots de passe sont différents','The passwords do not match'));
+  const {error}=await sb.auth.updateUser({password:a});
+  if(error)return toast('❌ '+error.message);
+  $('#pwModal').classList.remove('show');$('#pwNew').value='';$('#pwNew2').value='';
+  toast(L('✅ Mot de passe modifié','✅ Password updated'));
+}
+
+/* ── Tutoriel de première connexion ── */
+const TUTO={
+ fr:[
+  ['🎯','Bienvenue sur Sniper Journal','Ce court tutoriel présente les outils essentiels. Il dure une minute et tu peux le revoir à tout moment dans Réglages.'],
+  ['➕','Enregistre un trade','Dans l’onglet Trade, renseigne la paire, la direction, le résultat en R et ton état émotionnel, puis complète la checklist pré-trade. Tu peux joindre une capture d’écran.'],
+  ['🛡️','Respecte ton plan','Le bouclier anti-tilt bloque l’enregistrement lorsque tu dépasses tes limites quotidiennes : nombre de trades, perte maximale, pertes consécutives. Règle ces limites dans Réglages.'],
+  ['📥','Importe ton historique','Dans Réglages, importe un rapport MetaTrader (HTML, CSV, PDF), un export JSON ou une capture TradingView : les champs du trade sont remplis automatiquement.'],
+  ['📊','Analyse et corrige','L’onglet Stats présente la courbe d’equity, le coût de tes erreurs et le suivi de ton challenge. L’onglet Psycho rassemble ta revue hebdomadaire et le rapport IA (Premium).'],
+  ['⚙️','Personnalise ton espace','Le menu de ton compte (le rond en haut à droite) permet de changer la langue et le thème, de passer Premium ou de te déconnecter. Bon trading !']
+ ],
+ en:[
+  ['🎯','Welcome to Sniper Journal','This short tutorial presents the essential tools. It takes about one minute and may be replayed at any time from the Settings tab.'],
+  ['➕','Record a trade','In the Trade tab, enter the pair, the direction, the result in R and your emotional state, then complete the pre-trade checklist. A screenshot may be attached.'],
+  ['🛡️','Follow your plan','The anti-tilt shield prevents logging when your daily limits are exceeded: number of trades, maximum loss and consecutive losses. These limits are configured in Settings.'],
+  ['📥','Import your history','In Settings, import a MetaTrader report (HTML, CSV, PDF), a JSON export or a TradingView screenshot: the trade fields are filled in automatically.'],
+  ['📊','Analyse and correct','The Stats tab presents the equity curve, the cost of your mistakes and the monitoring of your challenge. The Psych. tab gathers your weekly review and the AI report (Premium).'],
+  ['⚙️','Personalise your workspace','Your account menu (the circle at the top right) lets you change the language and the theme, upgrade to Premium or sign out. Good trading!']
+ ]
+};
+let tutoI=0;
+function openTuto(){tutoI=0;renderTuto();$('#tutoModal').classList.add('show')}
+function renderTuto(){
+  const steps=TUTO[LANG==='en'?'en':'fr'],st=steps[tutoI],last=tutoI===steps.length-1;
+  $('#tutoBox').innerHTML=`<div style="text-align:center"><div style="font-size:2.6rem">${st[0]}</div><h3 style="margin:8px 0">${st[1]}</h3><p class="muted" style="margin:0">${st[2]}</p></div>
+  <div class="dots">${steps.map((_,i)=>`<span class="dot ${i===tutoI?'on':''}"></span>`).join('')}</div>
+  <div class="g2"><button id="tutoPrev" ${tutoI===0?'disabled':''}>${L('Précédent','Back')}</button><button id="tutoNext" class="pri">${last?L('Commencer','Start'):L('Suivant','Next')}</button></div>
+  ${last?'':`<button id="tutoSkip" class="link" style="width:100%;text-align:center;margin-top:6px">${L('Passer','Skip')}</button>`}`;
+  $('#tutoPrev').onclick=()=>{if(tutoI>0){tutoI--;renderTuto()}};
+  $('#tutoNext').onclick=()=>{if(last)closeTuto();else{tutoI++;renderTuto()}};
+  const sk=$('#tutoSkip');if(sk)sk.onclick=closeTuto;
+}
+async function closeTuto(){
+  $('#tutoModal').classList.remove('show');
+  if(!state.onboarded){state.onboarded=true;try{await saveState()}catch(e){}}
+}
+
+/* ── Documents légaux ── */
+function legalDoc(k){
+  const em=LEGAL_CFG.email,pub=LEGAL_CFG.publisher;
+  const contact=em?em:L('les coordonnées publiées sur le site','the contact details published on the site');
+  const fr={
+   terms:['Conditions d’utilisation et de vente',`<h4>1. Objet</h4><p>Sniper Journal est un journal de trading en ligne : un outil de journalisation et d’analyse. Il ne fournit ni conseil en investissement, ni signal de trading, ni gestion de portefeuille.</p>
+<h4>2. Compte</h4><p>Tu fournis des informations exactes et tu protèges tes identifiants. Tu es responsable de l’activité réalisée depuis ton compte.</p>
+<h4>3. Offres et prix</h4><ul><li>Gratuit : 30 trades et 3 captures.</li><li>Premium mensuel : 10 000 FCFA ; annuel : 120 000 FCFA ; à vie : 500 000 FCFA.</li></ul><p>Le paiement s’effectue par Mobile Money (Orange Money, MTN Mobile Money) via un prestataire de paiement tiers. Les abonnements mensuel et annuel ne se renouvellent pas automatiquement : l’accès Premium prend fin à l’échéance et tes données restent conservées. « À vie » désigne l’accès pendant toute la durée d’exploitation du service.</p>
+<h4>4. Utilisation acceptable</h4><p>Il est interdit d’utiliser le service à des fins illicites, de contourner ses limites techniques ou de tenter d’accéder aux données d’autres utilisateurs.</p>
+<h4>5. Responsabilité</h4><p>Le service est fourni « en l’état ». Le trading comporte un risque de perte en capital et aucun résultat n’est garanti. Les calculs affichés sont indicatifs et doivent être vérifiés par l’utilisateur. Dans les limites permises par la loi, notre responsabilité est limitée aux sommes payées pour le service.</p>
+<h4>6. Résiliation</h4><p>Tu peux supprimer ton compte à tout moment dans Réglages. Un compte peut être suspendu en cas d’abus.</p>
+<h4>7. Modifications et droit applicable</h4><p>Ces conditions peuvent évoluer ; la version en vigueur est celle publiée dans l’application. Elles sont régies par le droit du pays de l’éditeur (Cameroun), sous réserve des dispositions impératives applicables à l’utilisateur.</p>`],
+   privacy:['Politique de confidentialité',`<h4>Données collectées</h4><ul><li>Compte : adresse email et mot de passe (stocké sous forme chiffrée par le service d’authentification).</li><li>Journal : trades, notes, captures, revues, playbook et réglages que tu saisis.</li><li>Paiements : référence, montant, date et statut. Nous ne voyons ni ne stockons tes numéros Mobile Money.</li><li>Préférences (langue, thème) et données du mode invité : stockées dans ton navigateur.</li></ul>
+<h4>Finalités</h4><p>Fournir le service, synchroniser tes données, traiter les paiements, sécuriser les comptes et, à ta demande uniquement, générer un rapport d’analyse par IA.</p>
+<h4>Prestataires</h4><ul><li>Supabase : base de données et authentification (région Union européenne).</li><li>Netlify : hébergement du site.</li><li>Notch Pay : paiements par Mobile Money.</li><li>Cloudflare Turnstile : vérification anti-robot, lorsqu’elle est activée.</li><li>Anthropic : rapport IA, uniquement lorsque tu le demandes ; seules les données de la semaine analysée sont transmises, sans tes notes ni tes captures.</li></ul>
+<h4>Conservation</h4><p>Tes données sont conservées tant que ton compte existe et supprimées à sa suppression. Les enregistrements de paiement sont conservés sous forme anonymisée pour nos obligations comptables.</p>
+<h4>Tes droits</h4><p>Tu peux consulter, exporter (JSON, CSV) et supprimer tes données dans Réglages. Pour toute autre demande : ${contact}.</p>
+<h4>Cookies et stockage local</h4><p>Le service utilise le stockage du navigateur uniquement pour fonctionner (session, préférences, données invité). Aucun cookie publicitaire ni traceur n’est utilisé et aucune donnée n’est vendue.</p>`],
+   legal:['Mentions légales',`<h4>Éditeur</h4><p>Sniper Journal${pub?' — '+pub:''} (Cameroun).</p>
+<h4>Contact</h4><p>${contact}.</p>
+<h4>Hébergement</h4><p>Site : Netlify. Données et authentification : Supabase (région Union européenne).</p>
+<h4>Avertissement</h4><p>Sniper Journal est un outil de journalisation et d’analyse. Il ne fournit aucun conseil en investissement. Le trading comporte un risque de perte en capital ; les performances passées ne garantissent pas les résultats futurs.</p>`],
+   refund:['Politique de remboursement',`<h4>Principe</h4><p>Les abonnements Premium donnent un accès numérique immédiat : ils ne sont en principe pas remboursables une fois l’accès activé.</p>
+<h4>Cas examinés</h4><ul><li>Paiement débité sans activation du Premium sous 24 heures : nous activons l’accès ou nous remboursons.</li><li>Double paiement ou erreur de facturation : remboursement du montant concerné.</li><li>Service non conforme à sa description et non corrigé dans les 7 jours suivant le paiement : remboursement possible sur demande.</li></ul>
+<h4>Procédure</h4><p>Écris-nous (${contact}) en indiquant l’email du compte et la référence de la transaction. Le remboursement est effectué, si possible, par le moyen de paiement utilisé.</p>`]
+  };
+  const en={
+   terms:['Terms of Use and Sale',`<h4>1. Purpose</h4><p>Sniper Journal is an online trading journal: a journaling and analysis tool. It does not provide investment advice, trading signals or portfolio management.</p>
+<h4>2. Account</h4><p>You shall provide accurate information and keep your credentials secure. You are responsible for all activity carried out from your account.</p>
+<h4>3. Plans and prices</h4><ul><li>Free: 30 trades and 3 screenshots.</li><li>Monthly plan: 10,000 FCFA; annual plan: 120,000 FCFA; lifetime plan: 500,000 FCFA.</li></ul><p>Payment is made by Mobile Money (Orange Money, MTN Mobile Money) through a third-party payment provider. Monthly and annual plans do not renew automatically: access to paid features ends at expiry and your data are retained. “Lifetime” means access for as long as the service is operated.</p>
+<h4>4. Acceptable use</h4><p>It is prohibited to use the service for unlawful purposes, to circumvent its technical limits or to attempt to access other users’ data.</p>
+<h4>5. Liability</h4><p>The service is provided “as is”. Trading involves a risk of capital loss and no result is guaranteed. The figures displayed are indicative and must be verified by the user. To the extent permitted by law, our liability is limited to the amounts paid for the service.</p>
+<h4>6. Termination</h4><p>You may delete your account at any time in Settings. An account may be suspended in the event of abuse.</p>
+<h4>7. Amendments and governing law</h4><p>These terms may be amended; the version in force is the one published in the application. They are governed by the law of the publisher’s country (Cameroon), subject to mandatory provisions applicable to the user.</p>`],
+   privacy:['Privacy Policy',`<h4>Data collected</h4><ul><li>Account: email address and password (stored in encrypted form by the authentication service).</li><li>Journal: the trades, notes, screenshots, reviews, playbook and settings that you enter.</li><li>Payments: reference, amount, date and status. We neither see nor store your Mobile Money numbers.</li><li>Preferences (language, theme) and guest-mode data: stored in your browser.</li></ul>
+<h4>Purposes</h4><p>To provide the service, synchronise your data, process payments, secure accounts and, at your request only, generate an AI analysis report.</p>
+<h4>Service providers</h4><ul><li>Supabase: database and authentication (European Union region).</li><li>Netlify: website hosting.</li><li>Notch Pay: Mobile Money payments.</li><li>Cloudflare Turnstile: anti-robot verification, where enabled.</li><li>Anthropic: AI report, only when you request it; only the data of the analysed week are transmitted, excluding your notes and screenshots.</li></ul>
+<h4>Retention</h4><p>Your data are retained for as long as your account exists and are deleted when it is deleted. Payment records are retained in anonymised form to meet our accounting obligations.</p>
+<h4>Your rights</h4><p>You may view, export (JSON, CSV) and delete your data in Settings. For any other request: ${contact}.</p>
+<h4>Cookies and local storage</h4><p>The service uses browser storage solely to function (session, preferences, guest data). No advertising cookies or trackers are used, and no data are sold.</p>`],
+   legal:['Legal Notice',`<h4>Publisher</h4><p>Sniper Journal${pub?' — '+pub:''} (Cameroon).</p>
+<h4>Contact</h4><p>${contact}.</p>
+<h4>Hosting</h4><p>Website: Netlify. Data and authentication: Supabase (European Union region).</p>
+<h4>Disclaimer</h4><p>Sniper Journal is a journaling and analysis tool. It does not provide investment advice. Trading involves a risk of capital loss; past performance does not guarantee future results.</p>`],
+   refund:['Refund Policy',`<h4>Principle</h4><p>Paid plans grant immediate digital access: they are, in principle, non-refundable once access has been activated.</p>
+<h4>Cases considered</h4><ul><li>Payment debited without activation of paid access within 24 hours: we activate access or refund the payment.</li><li>Duplicate payment or billing error: refund of the amount concerned.</li><li>Service not conforming to its description and not remedied within 7 days of payment: refund available on request.</li></ul>
+<h4>Procedure</h4><p>Contact us (${contact}) stating the account email and the transaction reference. Refunds are made, where possible, through the payment method used.</p>`]
+  };
+  return (LANG==='en'?en:fr)[k];
+}
+let legalK='terms';
+const LEGAL_KEYS=['terms','privacy','legal','refund'];
+function openLegal(k){legalK=k||'terms';renderLegal();$('#legalModal').classList.add('show')}
+function renderLegal(){
+  $('#legalTabs').innerHTML=LEGAL_KEYS.map(k=>`<button data-lk="${k}" class="${k===legalK?'pri':''}" style="width:auto;padding:8px 12px;font-size:.8rem">${esc({terms:L('Conditions','Terms'),privacy:L('Confidentialité','Privacy'),legal:L('Mentions légales','Legal notice'),refund:L('Remboursements','Refunds')}[k])}</button>`).join('');
+  $('#legalTabs').querySelectorAll('[data-lk]').forEach(b=>b.onclick=()=>{legalK=b.dataset.lk;renderLegal()});
+  const d=legalDoc(legalK);
+  $('#legalBody').innerHTML=`<h3 style="margin:0 0 4px">${d[0]}</h3>${d[1]}<p class="small">${L('Dernière mise à jour : octobre 2026','Last updated: October 2026')}</p>`;
+}
+
+/* ── Suppression du compte et des données ── */
+function wipeLocal(){
+  const k=stateKey();
+  idbDel(k).catch(()=>{});
+  try{localStorage.removeItem('ts-v5-'+k);localStorage.removeItem('ts_pay_txn');localStorage.removeItem('ts_pay_pending')}catch(e){}
+}
+function openDel(){
+  const cloud=authMode==='cloud',word=L('SUPPRIMER','DELETE');
+  $('#delBox').innerHTML=`<h3 style="color:var(--red);margin-top:0">${cloud?L('⚠️ Supprimer mon compte','⚠️ Delete my account'):L('⚠️ Effacer mes données locales','⚠️ Erase my local data')}</h3>
+  <p class="small">${cloud?L('Cette action est irréversible : ton compte, tes trades, tes captures, tes revues et ton playbook seront effacés. Les enregistrements de paiement sont conservés sous forme anonymisée pour des raisons comptables.','This action is irreversible: your account, trades, screenshots, reviews and playbook will be erased. Payment records are retained in anonymised form for accounting purposes.'):L('Toutes les données stockées dans ce navigateur (mode invité) seront effacées. Cette action est irréversible.','All data stored in this browser (guest mode) will be erased. This action is irreversible.')}</p>
+  <label>${L('Pour confirmer, écris','To confirm, type')} <b>${word}</b></label><input id="delWord" autocomplete="off" autocapitalize="characters">
+  <div id="delCaptcha" style="margin-top:12px"></div>
+  <div class="acts" style="flex-wrap:wrap"><button class="dng" id="delGo" disabled>${L('Supprimer définitivement','Delete permanently')}</button><button id="delCancel">${L('Annuler','Cancel')}</button></div>`;
+  $('#delModal').classList.add('show');
+  tsDelToken='';tsDelId=null;
+  const need=cloud&&!!TURNSTILE_SITEKEY;
+  const upd=()=>{$('#delGo').disabled=!($('#delWord').value.trim().toUpperCase()===word&&(!need||tsDelToken))};
+  $('#delWord').oninput=upd;$('#delCancel').onclick=()=>$('#delModal').classList.remove('show');$('#delGo').onclick=doDelete;
+  if(need)loadTurnstile().then(ok=>{if(!ok){$('#delCaptcha').textContent=L('Vérification anti-robot indisponible, réessaie plus tard.','Anti-robot verification is unavailable; please try again later.');return}tsDelId=turnstile.render('#delCaptcha',{sitekey:TURNSTILE_SITEKEY,theme:tsTheme(),callback:t=>{tsDelToken=t;upd()},'expired-callback':()=>{tsDelToken='';upd()}})});
+}
+async function doDelete(){
+  const btn=$('#delGo');btn.disabled=true;
+  if(authMode!=='cloud'){
+    wipeLocal();state={plan:'free',premiumUntil:null,settings:{...DEF},trades:[],reviews:{},playbook:[],reports:{},onboarded:false,lastSync:null};
+    $('#delModal').classList.remove('show');renderAll();toast(L('✅ Données locales effacées','✅ Local data erased'));return;
+  }
+  try{
+    const r=await fetch(SUPABASE_URL+'/functions/v1/delete-account',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token,apikey:SUPABASE_ANON},body:JSON.stringify({captcha_token:tsDelToken})});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(d.error||'Error');
+    wipeLocal();
+    try{await sb.auth.signOut()}catch(e){}
+    loggedId=null;session=null;authMode='guest';myRole='user';
+    state={plan:'free',premiumUntil:null,settings:{...DEF},trades:[],reviews:{},playbook:[],reports:{},onboarded:false,lastSync:null};
+    $('#delModal').classList.remove('show');showAuth();
+    toast(L('✅ Compte supprimé. Au revoir !','✅ Account deleted. Goodbye!'),{duration:5000});
+  }catch(e){toast('❌ '+e.message,{duration:5000});if(tsDelId!=null&&window.turnstile){try{turnstile.reset(tsDelId)}catch(x){}tsDelToken=''}btn.disabled=true}
+}
+
+/* ── Rapport IA hebdomadaire ── */
+function aiPeriod(){
+  const d=new Date();if($('#aiWeek').value==='last')d.setDate(d.getDate()-7);
+  const a=startOfWeek(d),b=new Date(a);b.setDate(b.getDate()+7);
+  return{key:localISO(a),start:a,end:b};
+}
+function renderReport(r){
+  const body=esc(r.text).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/^#{1,4} ?(.*)$/gm,'<h4>$1</h4>');
+  return `<div class="meta">${L('Semaine du','Week of')} ${fmtDate(r.week)} · ${new Date(r.at).toLocaleDateString(LOC())}</div><div style="white-space:pre-wrap;line-height:1.6;margin-top:6px">${body}</div>`;
+}
+function aiShow(){
+  const out=document.getElementById('aiOut');if(!out)return;
+  const r=(state.reports||{})[aiPeriod().key];out.innerHTML=r?renderReport(r):'';
+}
+async function aiGenerate(){
+  if(authMode!=='cloud')return toast(L('Connecte-toi pour utiliser le rapport IA.','Please sign in to use the AI report.'));
+  if(!requirePremium('Rapport IA'))return;
+  const p=aiPeriod(),tr=state.trades.filter(t=>{const d=mkDT(t);return d>=p.start&&d<p.end&&t.status!=='canceled'});
+  if(!tr.length)return toast(L('Aucun trade sur cette période.','No trades in this period.'));
+  const st=computeStats(tr),btn=$('#aiGen');btn.disabled=true;
+  $('#aiOut').innerHTML=`<p class="muted">${L('⏳ Analyse en cours…','⏳ Analysis in progress…')}</p>`;
+  const payload={lang:LANG,week:p.key,
+    stats:{trades:tr.length,winRate:+st.winRate.toFixed(1),profitFactor:isFinite(st.pf)?+st.pf.toFixed(2):null,expectancyR:+st.expectancy.toFixed(2),pnlUsd:+st.pnl.toFixed(2),maxDrawdownPct:+st.mdd.toFixed(2),disciplineScore:st.disc==null?null:Math.round(st.disc),planRatePct:Math.round(st.planRate)},
+    settings:{riskPct:state.settings.riskPct,maxTradesDay:state.settings.maxTradesDay,dailyLossPct:state.settings.dailyLossPct},
+    trades:tr.slice(0,80).map(t=>({date:t.date,time:t.time,pair:t.pair,dir:t.direction,session:t.session,setup:t.setup,quality:t.quality,emotion:t.emotion,plan:t.plan,r:t.resultR,plannedR:t.rPlanned,checklist:t.checklistScore,mistakes:t.mistakes||[],outsideShield:!!t.guardViolated}))};
+  try{
+    const r=await fetch(SUPABASE_URL+'/functions/v1/weekly-report',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token,apikey:SUPABASE_ANON},body:JSON.stringify(payload)});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok||!d.report)throw new Error(d.error||'Error');
+    state.reports=state.reports||{};state.reports[p.key]={text:d.report,week:p.key,at:Date.now(),lang:LANG};
+    const keys=Object.keys(state.reports).sort();while(keys.length>26)delete state.reports[keys.shift()];
+    try{await saveState()}catch(e){}
+    aiShow();
+  }catch(e){$('#aiOut').innerHTML='';toast('❌ '+e.message,{duration:5000})}
+  btn.disabled=false;
+}
+function aiNudge(){
+  if(!isPremium()||authMode!=='cloud')return;
+  const d=new Date();d.setDate(d.getDate()-7);const a=startOfWeek(d),b=new Date(a);b.setDate(b.getDate()+7);
+  const key=localISO(a),n=state.trades.filter(t=>{const x=mkDT(t);return x>=a&&x<b&&t.status!=='canceled'}).length;
+  if(n>=3&&!(state.reports||{})[key])toast(L('📊 Ton rapport IA de la semaine dernière est prêt à être généré (onglet Psycho).','📊 Your AI report for last week is ready to be generated (Psych. tab).'),{duration:7000});
+}
+/*FEAT2-END*/
+/*ADMIN-START*/
+let admUsers=[],admPays=[];
+const admPlanLbl=u=>u.plan==='premium'?(u.premium_until?'Premium · jusqu’au '+fmtDate(String(u.premium_until).slice(0,10)):'Premium · À vie'):'Gratuit';
+const admStatus={accepted:'Accepté',pending:'En attente',failed:'Échoué'},admPlan={monthly:'Mensuel',yearly:'Annuel',lifetime:'À vie'};
+function renderAdmin(){
+  const act=u=>u.plan==='premium'&&(!u.premium_until||new Date(u.premium_until)>new Date());
+  const prem=admUsers.filter(act).length,life=admUsers.filter(u=>u.plan==='premium'&&!u.premium_until).length;
+  const rev=admPays.filter(p=>p.status==='accepted').reduce((a,p)=>a+(p.amount||0),0);
+  $('#admCards').innerHTML=card('Utilisateurs',admUsers.length)+card('Premium actifs',prem,'good')+card('À vie',life)+card('Gratuits',admUsers.length-prem)+card('Revenus encaissés',new Intl.NumberFormat(LOC()).format(rev)+' FCFA','good');
+  const q=($('#admSearch').value||'').trim().toLowerCase(),list=admUsers.filter(u=>!q||(u.email||'').toLowerCase().includes(q));
+  $('#admUsers').innerHTML=list.length?list.map(u=>`<div class="panel"><div class="tt"><strong style="word-break:break-all" data-notr>${esc(u.email||u.id)}</strong>${u.role==='admin'?'<span class="b gold">Administrateur</span>':''}</div><p class="meta" style="margin:6px 0">${admPlanLbl(u)} · Inscrit le ${fmtDate(String(u.created_at||'').slice(0,10))}</p><div class="acts" style="flex-wrap:wrap"><button data-adm="${esc(u.id)}" data-m="month">+1 mois</button><button data-adm="${esc(u.id)}" data-m="year">+1 an</button><button class="pri" data-adm="${esc(u.id)}" data-m="lifetime">À vie</button><button class="dng" data-adm="${esc(u.id)}" data-m="free">Retirer Premium</button></div></div>`).join(''):'<div class="panel empty">Aucun utilisateur</div>';
+  const mail={};admUsers.forEach(u=>mail[u.id]=u.email);
+  $('#admPays').innerHTML=admPays.length?'<div style="overflow-x:auto"><table><thead><tr><th>Date</th><th data-notr>Email</th><th>Premium</th><th>FCFA</th><th>Statut</th></tr></thead><tbody>'+admPays.slice(0,30).map(p=>`<tr><td>${fmtDate(String(p.created_at||'').slice(0,10))}</td><td data-notr style="word-break:break-all">${esc(mail[p.user_id]||'—')}</td><td>${admPlan[p.plan]||esc(p.plan)}</td><td>${new Intl.NumberFormat(LOC()).format(p.amount||0)}</td><td class="${p.status==='accepted'?'good':p.status==='failed'?'bad':'warn'}">${admStatus[p.status]||esc(p.status)}</td></tr>`).join('')+'</tbody></table></div>':'Aucun paiement';
+}
+async function loadAdmin(){
+  if(myRole!=='admin'||!sb)return;
+  $('#admUsers').innerHTML='<div class="panel empty">Chargement…</div>';
+  const [pr,py]=await Promise.all([sb.from('profiles').select('id,email,plan,premium_until,role,created_at').order('created_at',{ascending:false}),sb.from('payments').select('transaction_id,user_id,plan,amount,status,created_at').order('created_at',{ascending:false}).limit(1000)]);
+  if(pr.error){toast('❌ '+pr.error.message);return}
+  admUsers=pr.data||[];admPays=py.data||[];renderAdmin();
+}
+function openAdmin(){if(myRole!=='admin')return toast('Accès réservé aux administrateurs.');switchTab('tab-admin');loadAdmin()}
+async function admSet(id,mode){
+  const u=admUsers.find(x=>x.id===id);if(!u||myRole!=='admin')return;
+  let upd;
+  if(mode==='free'){if(!confirm('Retirer le Premium de cet utilisateur ?'))return;upd={plan:'free',premium_until:null}}
+  else if(mode==='lifetime')upd={plan:'premium',premium_until:null};
+  else{
+    if(u.plan==='premium'&&!u.premium_until)return toast('Déjà à vie');
+    const cur=u.plan==='premium'&&u.premium_until?new Date(u.premium_until).getTime():0,b=new Date(Math.max(Date.now(),cur));
+    if(mode==='month')b.setMonth(b.getMonth()+1);else b.setFullYear(b.getFullYear()+1);
+    upd={plan:'premium',premium_until:b.toISOString()};
+  }
+  const {error}=await sb.from('profiles').update(upd).eq('id',id);
+  if(error)return toast('❌ '+error.message);
+  toast('✅ Mis à jour');await loadAdmin();
+  if(session?.user&&id===session.user.id)refreshPlan();
+}
+/*ADMIN-END*/
+function openAccount(){
+  const cloud=authMode==='cloud',em=session?.user?.email||'';
+  $('#accAvatar').textContent=((em||'Invité')[0]).toUpperCase();
+  $('#accEmail').textContent=cloud?em:'Mode invité';
+  $('#accPlan').textContent=isPremium()?(state.premiumUntil?'👑 Premium jusqu’au '+fmtDate(String(state.premiumUntil).slice(0,10)):'👑 Premium à vie'):(cloud?'Plan gratuit':'Données stockées sur cet appareil uniquement');
+  $('#accUpgrade').classList.toggle('hidden',isPremium()||!cloud);
+  $('#accAdmin').classList.toggle('hidden',myRole!=='admin'||!cloud);
+  if(myRole==='admin'&&cloud)$('#accPlan').textContent='🛠️ Super administrateur · '+$('#accPlan').textContent;
+  $('#accLogout').textContent=cloud?'Se déconnecter':'Quitter le mode invité';
+  $('#accountModal').classList.add('show');
+}
+async function onLoggedIn(user){
+  state={plan:'free',premiumUntil:null,settings:{...DEF},trades:[],reviews:{},playbook:[],reports:{},onboarded:false,lastSync:null};
+  authMode='cloud';
+  let plan='free',until=null,cloud=null;
+  try{const {data}=await sb.from('profiles').select('plan,premium_until,role').eq('id',user.id).maybeSingle();if(data){plan=data.plan||'free';until=data.premium_until;myRole=data.role||'user'}}catch(e){}
+  try{const {data}=await sb.from('user_data').select('state').eq('user_id',user.id).maybeSingle();cloud=data?.state}catch(e){}
+  const local=await loadLocal();
+  if(cloud&&Object.keys(cloud).length&&(!local||(cloud.lastSync||'')>=(local.lastSync||'')))mergeState(cloud);else if(local)mergeState(local);
+  state.plan=plan;state.premiumUntil=until;
+  const guest=await idbGet('state_guest').catch(()=>null);
+  if(guest&&guest.trades?.length&&!state.trades.length&&confirm(`Importer les ${guest.trades.length} trade(s) du mode invité dans ton compte ?`)){
+    mergeState(guest);state.plan=plan;state.premiumUntil=until;enforceFree();await idbDel('state_guest').catch(()=>{});
+  }
+  showApp();renderAll();updScore();updPnl();
+  try{await saveState()}catch(e){}
+  watchPayment();
+  if(!state.onboarded)setTimeout(openTuto,700);
+  setTimeout(aiNudge,3000);
+}
+async function doAuth(){
+  const email=$('#authEmail').value.trim(),pwd=$('#authPassword').value,err=$('#authError');err.textContent='';
+  if(!email||!pwd){err.textContent='Email et mot de passe requis';return}
+  const btn=$('#authSubmit');btn.disabled=true;
+  try{
+    if(TURNSTILE_SITEKEY&&!tsAuthToken&&!tsFailed)throw new Error(L('Complète la vérification anti-robot','Please complete the anti-robot verification'));
+    if(authView==='login'){const {error}=await sb.auth.signInWithPassword({email,password:pwd,...(tsAuthToken?{options:{captchaToken:tsAuthToken}}:{})});if(error)throw error}
+    else{
+      if(pwd.length<6)throw new Error('Mot de passe : 6 caractères minimum');
+      if(pwd!==$('#authPassword2').value)throw new Error('Les mots de passe sont différents');
+      const {data,error}=await sb.auth.signUp({email,password:pwd,options:{emailRedirectTo:location.origin+location.pathname,...(tsAuthToken?{captchaToken:tsAuthToken}:{})}});if(error)throw error;
+      if(!data.session){err.className='good small';err.textContent='✅ Compte créé. Vérifie ta boîte mail pour confirmer, puis connecte-toi.';switchAuthView()}
+    }
+  }catch(e){err.className='bad small';err.textContent=e.message||'Erreur'}
+  btn.disabled=false;resetAuthCaptcha();
+}
+async function oauth(provider){
+  const err=$('#authError');err.className='bad small';err.textContent='';
+  if(!sb){err.textContent='Connexion indisponible hors ligne';return}
+  const {error}=await sb.auth.signInWithOAuth({provider,options:{redirectTo:location.origin+location.pathname}});
+  if(error)err.textContent=/not enabled|Unsupported/i.test(error.message)?'Cette méthode de connexion n’est pas encore activée.':error.message;
+}
+function switchAuthView(){
+  authView=authView==='login'?'signup':'login';
+  $('#authSubmit').textContent=authView==='login'?'Se connecter':'Créer un compte';
+  $('#authSwitch').textContent=authView==='login'?'Pas de compte ? Créer un compte':'Déjà un compte ? Se connecter';
+  $('#pwdConfirm').classList.toggle('hidden',authView==='login');
+  $('#authForgot').classList.toggle('hidden',authView!=='login');$('#authConsent').classList.toggle('hidden',authView==='login');renderConsent();
+}
+async function startGuest(){
+  authMode='guest';session=null;myRole='user';
+  state={plan:'free',premiumUntil:null,settings:{...DEF},trades:[],reviews:{},playbook:[],reports:{},onboarded:false,lastSync:null};
+  mergeState(await loadLocal());
+  showApp();renderAll();updScore();updPnl();
+}
+async function logout(){
+  if(authMode!=='cloud'){showAuth();return}
+  try{await sb.auth.signOut()}catch(e){}
+  loggedId=null;session=null;authMode='guest';myRole='user';
+  state={plan:'free',premiumUntil:null,settings:{...DEF},trades:[],reviews:{},playbook:[],reports:{},onboarded:false,lastSync:null};
+  showAuth();
+}
+
+/* ── Calculs ── */
+function filterTrades(a,m){
+  const now=new Date();
+  if(m==='week'){const s=startOfWeek(now),e=new Date(s);e.setDate(e.getDate()+7);return a.filter(t=>{const d=mkDT(t);return d>=s&&d<e})}
+  if(m==='month')return a.filter(t=>{const d=mkDT(t);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()});
+  if(m==='year')return a.filter(t=>mkDT(t).getFullYear()===now.getFullYear());
+  return a;
+}
+const filtered=()=>filterTrades(state.trades,filter);
+const riskAmt=()=>state.settings.capital*state.settings.riskPct/100;
+const isDone=t=>t.resultR!=null&&t.status!=='canceled';
+const tradePnl=t=>isDone(t)?t.resultR*riskAmt():0;
+
+/* Garde-fou : ne regarde que les trades clôturés pour les séries/cooldown */
+function guardInfo(dateStr,ignoreId=null){
+  const day=state.trades.filter(t=>t.date===dateStr&&t.id!==ignoreId&&t.status!=='canceled');
+  const max=state.settings.maxTradesDay,limit=state.settings.capital*state.settings.dailyLossPct/100;
+  const loss=Math.abs(Math.min(0,day.reduce((s,t)=>s+tradePnl(t),0)));
+  const done=sortT(day.filter(isDone));
+  let cons=0;for(let i=done.length-1;i>=0;i--){if(done[i].resultR<0)cons++;else break}
+  let until=null;const last=done[done.length-1];
+  if(last&&last.resultR<0){const u=new Date(mkDT(last).getTime()+30*60000);if(new Date()<u)until=u}
+  let block=null;
+  if(dateStr===todayISO()){
+    if(day.length>=max)block=`Limite de ${max} trades/jour atteinte.`;
+    else if(loss>=limit)block='Perte journalière max atteinte.';
+    else if(cons>=2)block='2 pertes consécutives : stop pour aujourd’hui.';
+    else if(until)block=`Cooldown jusqu’à ${until.toLocaleTimeString(LOC(),{hour:'2-digit',minute:'2-digit'})}.`;
+  }
+  return{count:day.length,max,loss,limit,cons,until,block};
+}
+function updateGuards(){
+  const ds=$('#date').value||todayISO(),g=guardInfo(ds,editId);
+  $('#gT').textContent=`Trades : ${g.count}/${g.max}`;
+  $('#gL').textContent=`Perte : ${fmtUSD(g.loss)} / ${fmtUSD(g.limit)}`;
+  $('#gC').textContent=`Série : ${g.cons}/2`;
+  $('#gD').textContent=g.until?`⏳ ${g.until.toLocaleTimeString(LOC(),{hour:'2-digit',minute:'2-digit'})}`:'✅ OK';
+  const p=$('#guardPanel'),m=$('#gM');
+  if(g.block){p.className='guard danger';m.style.display='block';m.textContent='⛔ '+g.block;m.className='gm bad';$('#btnSave').disabled=true;$('#btnOverride').classList.remove('hidden')}
+  else{
+    const warn=ds===todayISO()&&(g.count===g.max-1||g.loss>=g.limit*0.7);
+    p.className='guard'+(warn?' warn':'');
+    m.style.display=warn?'block':'none';m.textContent='⚠️ Attention, limites proches.';m.className='gm warn';
+    $('#btnSave').disabled=false;$('#btnOverride').classList.add('hidden');
+  }
+}
+function equitySeries(trades){let eq=state.settings.capital;const pts=[{equity:eq,trade:null}];sortT(trades).forEach(t=>{eq+=tradePnl(t);pts.push({equity:eq,trade:t})});return pts}
+function maxDD(pts){let peak=state.settings.capital,mdd=0,mm=0;pts.forEach(p=>{if(p.equity>peak)peak=p.equity;const m=peak-p.equity,d=peak>0?m/peak*100:0;if(d>mdd){mdd=d;mm=m}});return{pct:mdd,money:mm}}
+function streaks(trades){
+  let cw=0,cl=0,bw=0,bl=0;
+  sortT(trades.filter(isDone)).forEach(t=>{if(t.resultR>0){cw++;cl=0;bw=Math.max(bw,cw)}else if(t.resultR<0){cl++;cw=0;bl=Math.max(bl,cl)}});
+  return{current:cw>0?`+${cw}W`:cl>0?`-${cl}L`:'—',bestW:bw,bestL:bl};
+}
+function computeStats(trades){
+  const closed=trades.filter(isDone),wins=closed.filter(t=>t.resultR>0);
+  const pnl=trades.reduce((s,t)=>s+tradePnl(t),0),cap=state.settings.capital,equity=cap+pnl;
+  const dd=maxDD(equitySeries(trades)),allowed=cap*state.settings.ddMax/100;
+  const remaining=allowed-Math.max(0,cap-equity);
+  const winsR=wins.reduce((s,t)=>s+t.resultR,0),lossR=Math.abs(closed.filter(t=>t.resultR<0).reduce((s,t)=>s+t.resultR,0));
+  const pf=lossR===0?(winsR>0?Infinity:0):winsR/lossR;
+  let disc=100;
+  if(trades.length){disc=0;trades.forEach(t=>{let s=50;
+    if(t.plan==='OUI')s+=30;else if(t.plan==='PARTIEL')s+=10;
+    if(t.emotion==='Calme'||t.emotion==='Confiant')s+=20;else if(t.emotion==='FOMO'||t.emotion==='Revenge')s-=30;
+    if(t.checklistScore>=4)s+=10;else if(t.checklistScore<=2)s-=10;
+    if(t.guardViolated)s-=20;disc+=Math.max(0,Math.min(100,s))});disc/=trades.length}
+  return{count:trades.length,pnl,equity,allowed,remaining,mdd:dd.pct,mddMoney:dd.money,
+    winRate:closed.length?wins.length/closed.length*100:0,planRate:trades.length?trades.filter(t=>t.plan==='OUI').length/trades.length*100:0,
+    pf,expectancy:closed.length?(winsR-lossR)/closed.length:0,disc,
+    fomo:trades.filter(t=>t.emotion==='FOMO').length,revenge:trades.filter(t=>t.emotion==='Revenge').length,
+    viol:trades.filter(t=>t.guardViolated).length,streaks:streaks(trades)};
+}
+function addTo(map,k,t){if(!map[k])map[k]={trades:0,wins:0,r:0,pnl:0};const m=map[k];m.trades++;if(t.resultR>0)m.wins++;if(isDone(t)){m.r+=t.resultR;m.pnl+=tradePnl(t)}}
+const toRows=map=>Object.entries(map).map(([name,v])=>({name,...v,winRate:v.trades?v.wins/v.trades*100:0}));
+function groupStats(trades,key){const m={};trades.forEach(t=>addTo(m,t[key]||'N/A',t));return toRows(m).sort((a,b)=>b.pnl-a.pnl)}
+function byDay(trades){const d=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'],m={};d.forEach(x=>m[x]={trades:0,wins:0,r:0,pnl:0});trades.forEach(t=>addTo(m,d[(mkDT(t).getDay()+6)%7],t));return toRows(m)}
+function byHour(trades){const m={};trades.forEach(t=>{if(!t.time)return;const h=parseInt(t.time,10);addTo(m,String(h-h%2).padStart(2,'0')+'h',t)});return toRows(m).sort((a,b)=>a.name.localeCompare(b.name))}
+const EMOS=['Calme','Confiant','Stressé','FOMO','Revenge','Fatigué'];
+const pnlByEmo=trades=>EMOS.map(e=>{const t=trades.filter(x=>x.emotion===e);return{name:e,count:t.length,pnl:t.reduce((s,x)=>s+tradePnl(x),0)}});
+
+/* ── Rendu ── */
+function toast(msg,o={}){
+  const el=$('#toast');el.innerHTML=esc(msg)+(o.undo?'<button class="undo">↩️ Annuler</button>':'');el.classList.add('show');
+  if(o.undo)el.querySelector('.undo').onclick=()=>{o.undo();el.classList.remove('show')};
+  clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),o.duration||2600);
+}
+function switchTab(id){
+  if($('#'+id).dataset.ptab!==undefined&&!isPremium()){showPremiumModal('Playbook');return}
+  $$('.tab').forEach(t=>t.classList.remove('active'));$('#'+id).classList.add('active');
+  $$('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));
+  if(id==='tab-psycho'&&typeof aiShow==='function')aiShow();
+  if(id==='tab-stats')requestAnimationFrame(()=>{drawEquity(filtered());drawRDist(filtered());renderHeatmap()});
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function setFilter(v){filter=v;dayView=null;$('#filterStats').value=v;$('#filterJournal').value=v;renderStats();renderJournal()}
+const card=(l,v,c='')=>`<div class="card"><div class="cl">${esc(l)}</div><div class="cv ${c}">${v}</div></div>`;
+const tableHTML=(title,rows)=>`<div class="panel"><h3>${esc(title)}</h3><div style="overflow-x:auto"><table><thead><tr><th>Catégorie</th><th>Trades</th><th>Win%</th><th>R</th><th>PnL</th></tr></thead><tbody>${rows.length?rows.map(r=>`<tr><td>${esc(r.name)}</td><td>${r.trades}</td><td>${r.winRate.toFixed(0)}%</td><td class="${r.r>=0?'good':'bad'}">${r.r.toFixed(2)}</td><td class="${r.pnl>=0?'good':'bad'}">${fmtUSD(r.pnl)}</td></tr>`).join(''):'<tr><td colspan="5" class="muted">Aucune donnée</td></tr>'}</tbody></table></div></div>`;
+
+function renderStats(){
+  const trades=filtered(),s=computeStats(trades),a=computeStats(state.trades),set=state.settings;
+  $('#accCards').innerHTML=[card('Capital compte',fmtUSD(a.equity),a.equity>=set.capital?'good':'bad'),card('PnL total',fmtUSD(a.pnl),a.pnl>=0?'good':'bad'),card('Trades total',a.count),card('Marge DD restante',fmtUSD(a.remaining),a.remaining>a.allowed*0.5?'good':'warn')].join('');
+  $('#perCards').innerHTML=[
+    card('PnL période',fmtUSD(s.pnl),s.pnl>=0?'good':'bad'),card('Winrate',s.winRate.toFixed(1)+'%',s.winRate>=50?'good':'warn'),
+    card('Profit Factor',s.pf===Infinity?'∞':s.pf.toFixed(2),s.pf>=1.5?'good':'bad'),card('Expectancy',s.expectancy.toFixed(2)+'R',s.expectancy>0?'good':'bad'),
+    card('Drawdown',s.mdd.toFixed(2)+'%',s.mdd>=set.ddMax*0.66?'bad':'warn'),card('DD en $',fmtUSD(s.mddMoney),s.mddMoney>0?'warn':'good'),
+    card('Discipline',s.disc.toFixed(0)+'%',s.disc>=75?'good':s.disc>=50?'warn':'bad'),card('Série actuelle',s.streaks.current,s.streaks.current[0]==='+'?'good':s.streaks.current[0]==='-'?'bad':'')].join('');
+  $('#behCards').innerHTML=[card('Plan respecté',s.planRate.toFixed(0)+'%',s.planRate>=80?'good':'bad'),card('FOMO',s.fomo,s.fomo<=1?'good':'bad'),card('Revenge',s.revenge,s.revenge===0?'good':'bad'),card('Hors garde-fou',s.viol,s.viol===0?'good':'bad'),card('Coût des erreurs',fmtUSD(mistakeCost(trades)),mistakeCost(trades)>0?'bad':'good'),card('Meilleure série W','+'+s.streaks.bestW,'good'),card('Pire série L','-'+s.streaks.bestL,s.streaks.bestL>=3?'bad':'warn')].join('');
+  $('#emoCards').innerHTML=pnlByEmo(trades).map(e=>card(`PnL ${e.name} (${e.count})`,fmtUSD(e.pnl),e.pnl>=0?'good':'bad')).join('');
+  $('#tables').innerHTML=!isPremium()?'':tableHTML('Coût des erreurs (par type)',mistakeRows(trades))+tableHTML('Par paire',groupStats(trades,'pair'))+tableHTML('Par setup',groupStats(trades,'setup'))+tableHTML('Par session',groupStats(trades,'session'))+tableHTML('Par qualité',groupStats(trades,'quality'))+tableHTML('Par jour',byDay(trades))+tableHTML('Par heure',byHour(trades));
+  const tr=state.trades.filter(t=>t.date===todayISO()&&t.status!=='canceled').reduce((x,t)=>x+(t.resultR||0),0);
+  const wr=filterTrades(state.trades,'week').filter(t=>t.status!=='canceled').reduce((x,t)=>x+(t.resultR||0),0);
+  const dg=set.dailyRGoal||2,wg=set.weeklyRGoal||5,pc=(v,g)=>Math.min(100,Math.max(0,v/g*100));
+  renderChallenge();
+  $('#objs').innerHTML=!isPremium()?'':`<div><strong>Jour</strong> : ${tr.toFixed(1)}R / ${dg}R<div class="pb"><div class="pf" style="width:${pc(tr,dg)}%"></div></div></div><div style="margin-top:14px"><strong>Semaine</strong> : ${wr.toFixed(1)}R / ${wg}R<div class="pb"><div class="pf" style="width:${pc(wr,wg)}%"></div></div></div>`;
+  if($('#tab-stats').classList.contains('active')){drawEquity(trades);drawRDist(trades);renderHeatmap()}
+}
+
+function setupCanvas(c,h){
+  const dpr=window.devicePixelRatio||1,w=c.clientWidth||600;
+  c.width=w*dpr;c.height=h*dpr;c.style.height=h+'px';
+  const x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);x.clearRect(0,0,w,h);return{x,w};
+}
+const cssv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function drawEquity(trades){
+  const c=$('#eq'),H=240,{x:ctx,w:W}=setupCanvas(c,H),pts=equitySeries(trades),muted=cssv('--muted');
+  if(pts.length<2){ctx.fillStyle=muted;ctx.font='14px system-ui';ctx.fillText(T('Ajoute des trades…'),12,30);c._p=null;return}
+  const cap=state.settings.capital,vals=pts.map(p=>p.equity).concat(cap),mn=Math.min(...vals),mx=Math.max(...vals),pad=(mx-mn)*0.15||cap*0.01,yMin=mn-pad,yMax=mx+pad;
+  const L=12,R=12,T=12,B=28,w=W-L-R,h=H-T-B,X=i=>L+i*(w/(pts.length-1)),Y=v=>T+(yMax-v)/(yMax-yMin)*h,cy=Y(cap);
+  const gold=cssv('--gold'),green=cssv('--green'),red=cssv('--red');
+  ctx.strokeStyle=gold;ctx.setLineDash([6,4]);ctx.beginPath();ctx.moveTo(L,cy);ctx.lineTo(L+w,cy);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle=gold;ctx.font='11px system-ui';ctx.fillText(T('Capital initial'),L+4,cy-5);
+  for(let i=1;i<pts.length;i++){
+    const p0=pts[i-1],p1=pts[i],t=p1.trade;
+    ctx.beginPath();ctx.moveTo(X(i-1),Y(p0.equity));ctx.lineTo(X(i),Y(p1.equity));ctx.lineTo(X(i),cy);ctx.lineTo(X(i-1),cy);ctx.closePath();
+    ctx.globalAlpha=.15;ctx.fillStyle=p1.equity>=cap?green:red;ctx.fill();ctx.globalAlpha=1;
+    ctx.strokeStyle=t?.resultR>0?green:t?.resultR<0?red:muted;ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(X(i-1),Y(p0.equity));ctx.lineTo(X(i),Y(p1.equity));ctx.stroke();
+  }
+  pts.forEach((p,i)=>{if(!i)return;ctx.beginPath();ctx.arc(X(i),Y(p.equity),4,0,Math.PI*2);ctx.fillStyle=p.trade?.resultR>0?green:p.trade?.resultR<0?red:muted;ctx.fill()});
+  c._p={pts,X};
+}
+function drawRDist(trades){
+  const c=$('#rd'),H=180,{x:ctx,w:W}=setupCanvas(c,H),closed=trades.filter(isDone),muted=cssv('--muted'),text=cssv('--text');
+  if(!closed.length){ctx.fillStyle=muted;ctx.font='14px system-ui';ctx.fillText(T('Pas de trades fermés'),12,30);return}
+  const B=[['<-2R',r=>r<-2],['-2/-1',r=>r>=-2&&r<-1],['-1/0',r=>r>=-1&&r<0],['0/+1',r=>r>=0&&r<1],['+1/+2',r=>r>=1&&r<2],['+2/+3',r=>r>=2&&r<3],['>+3R',r=>r>=3]];
+  const cnt=B.map(b=>closed.filter(t=>b[1](t.resultR)).length),mx=Math.max(...cnt,1),bw=(W-20)/B.length,ch=H-40;
+  B.forEach((b,i)=>{const bh=cnt[i]/mx*ch,x=10+i*bw+4,y=20+ch-bh;
+    ctx.globalAlpha=.75;ctx.fillStyle=i<3?cssv('--red'):cssv('--green');ctx.fillRect(x,y,bw-8,bh);ctx.globalAlpha=1;
+    ctx.textAlign='center';ctx.fillStyle=text;ctx.font='bold 11px system-ui';if(cnt[i])ctx.fillText(cnt[i],x+(bw-8)/2,y-4);
+    ctx.fillStyle=muted;ctx.font='10px system-ui';ctx.fillText(b[0],x+(bw-8)/2,H-8)});
+}
+function renderHeatmap(){
+  const y=hmDate.getFullYear(),m=hmDate.getMonth(),off=(new Date(y,m,1).getDay()+6)%7,days=new Date(y,m+1,0).getDate(),per={};
+  state.trades.forEach(t=>{const d=mkDT(t);if(d.getFullYear()===y&&d.getMonth()===m){const k=d.getDate();per[k]=per[k]||{pnl:0,n:0};per[k].pnl+=tradePnl(t);per[k].n++}});
+  $('#hmLabel').textContent=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'][m]+' '+y;
+  let h=(LANG==='en'?['M','T','W','T','F','S','S']:['L','M','M','J','V','S','D']).map(d=>`<div class="hh">${d}</div>`).join('')+'<div class="hc e"></div>'.repeat(off);
+  const now=new Date();
+  for(let d=1;d<=days;d++){const p=per[d],cls=p?(p.pnl>0?'win':p.pnl<0?'loss':'flat'):'',td=now.getFullYear()===y&&now.getMonth()===m&&now.getDate()===d;
+    h+=`<div class="hc ${cls} ${td?'today':''}" data-d="${d}" title="${p?fmtUSD(p.pnl)+' · '+p.n+' trade(s)':'Aucun trade'}">${d}</div>`}
+  const el=$('#hm');el.innerHTML=h;
+  el.querySelectorAll('[data-d]').forEach(c=>c.onclick=()=>{dayView=`${y}-${String(m+1).padStart(2,'0')}-${String(c.dataset.d).padStart(2,'0')}`;renderJournal();switchTab('tab-journal')});
+}
+
+function tradeHTML(t){
+  const pnl=tradePnl(t),cls=t.status==='open'?'open':t.status==='be'?'':t.resultR>0?'win':t.resultR<0?'loss':'',
+  st=t.status==='open'?'OUVERT':t.status==='be'?'BE':t.status==='canceled'?'ANNULÉ':`${t.resultR}R`;
+  return `<article class="trade-card ${cls}"><div class="tt"><strong>${esc(t.pair)}</strong><span class="b ${t.direction==='LONG'?'long':'short'}">${esc(t.direction)}</span><span class="meta">${fmtDate(t.date)} · ${esc(t.time||'')}</span></div>
+  <div class="bd"><span class="b gold">${esc(t.session)}</span><span class="b">${esc(t.setup)}</span><span class="b">Score ${t.checklistScore||0}/5</span><span class="b">${esc(t.emotion)}</span>${t.quality?`<span class="b">${esc(t.quality)}</span>`:''}${t.rPlanned?`<span class="b">RR prévu ${esc(t.rPlanned)}</span>`:''}${t.guardViolated?'<span class="b viol">⚠️ Hors garde-fou</span>':''}${(t.mistakes||[]).map(m=>`<span class="b viol">⚠️ ${esc(m)}</span>`).join('')}${(t.tags||[]).map(g=>`<span class="b">#${esc(g)}</span>`).join('')}</div>
+  <div class="tr"><span class="${t.resultR>0?'good':t.resultR<0?'bad':'warn'}">${st}</span><span class="${pnl>=0?'good':'bad'}">${fmtUSD(pnl)}</span></div>
+  ${t.image?`<img class="thumb" src="${esc(t.image)}" alt="Capture" data-a="image" data-id="${esc(t.id)}">`:''}${t.notes?`<div class="notes">${esc(t.notes)}</div>`:''}
+  <div class="acts"><button data-a="edit" data-id="${esc(t.id)}">✏️</button><button data-a="delete" data-id="${esc(t.id)}" class="dng">🗑️</button></div></article>`;
+}
+function renderJournal(){
+  const list=dayView?sortT(state.trades.filter(t=>t.date===dayView)).reverse():sortT(filtered()).reverse(),title=dayView?`📅 ${fmtDate(dayView)}`:'📓 Journal';
+  $('#journalList').innerHTML=list.length?`<h2>${esc(title)} (${list.length})</h2>`+(dayView?'<button id="clearDay" style="margin-bottom:12px">✖ Voir tout le journal</button>':'')+list.map(tradeHTML).join(''):'<div class="panel empty">Aucun trade. Clique sur ＋ pour commencer.</div>';
+  const cd=$('#clearDay');if(cd)cd.onclick=()=>{dayView=null;renderJournal()};
+}
+function renderPsycho(){
+  const wt=filterTrades(state.trades,'week');
+  $('#emoStats').innerHTML=EMOS.map(e=>{const n=wt.filter(t=>t.emotion===e).length;return card(e,n,(e==='FOMO'||e==='Revenge')?(n?'bad':'good'):'')}).join('');
+  const wk=weekKey(),r=state.reviews[wk]||{};
+  $('#rvLabel').textContent='Semaine du '+fmtDate(wk);
+  $('#rvDom').value=r.dominant||'';$('#rvBest').value=r.best||'';$('#rvWorst').value=r.worst||'';$('#rvLesson').value=r.lesson||'';
+  $('#rvList').innerHTML=Object.entries(state.reviews).sort((a,b)=>b[0].localeCompare(a[0])).map(([k,r])=>`<div class="panel"><h3>${fmtDate(k)}</h3><p><strong>Émotion :</strong> ${esc(r.dominant||'—')}</p><p><strong>Meilleur :</strong> ${esc(r.best||'—')}</p><p><strong>Pire :</strong> ${esc(r.worst||'—')}</p><p><strong>Leçon :</strong> ${esc(r.lesson||'—')}</p></div>`).join('')||'<div class="panel empty">Aucune revue.</div>';
+}
+function renderSettings(){renderPremiumPanel();const s=state.settings;['capital','riskPct','ddMax','dailyLossPct','maxTradesDay','dailyRGoal','weeklyRGoal','profitTargetPct','challengeDays','challengeStart'].forEach(k=>$('#'+k).value=s[k]??'')}
+
+/* ── Formulaire ── */
+const CHK=['chk_htf','chk_liq','chk_setup','chk_news','chk_calm'];
+function resetForm(){
+  editId=null;curImg='';$('#tradeForm').reset();$('#formTitle').textContent='➕ Nouveau trade';
+  $('#date').value=todayISO();$('#time').value=nowTime();$('#status').value='open';
+  $('#imgPrev').classList.add('hidden');$('#rmImg').classList.add('hidden');
+  updScore();updPnl();updateGuards();
+}
+function updScore(){const n=CHK.filter(id=>$('#'+id).checked).length,el=$('#score');el.textContent=`Score : ${n}/5`;el.className='score '+(n>=4?'good':n>=2?'warn':'bad');return n}
+function updPnl(){
+  const r=num($('#resultR').value),st=$('#status').value,p=$('#pnlp');
+  if(!isNaN(r)&&(st==='closed'||st==='partial')){const v=r*riskAmt();p.textContent=`💰 Impact : ${v>=0?'+':''}${fmtUSD(v)} (${r}R)`;p.className='pnlp '+(v>=0?'good':'bad')}
+  else{p.textContent=`💰 Risque par trade : ${fmtUSD(riskAmt())}`;p.className='pnlp'}
+}
+function processImage(file){
+  return new Promise(res=>{const url=URL.createObjectURL(file),img=new Image();
+    img.onload=()=>{const c=document.createElement('canvas'),s=Math.min(1,700/Math.max(img.width,img.height));c.width=img.width*s;c.height=img.height*s;c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);res(c.toDataURL('image/jpeg',0.62))};
+    img.onerror=()=>res('');img.src=url});
+}
+function fillForm(t){
+  editId=t.id;curImg=t.image||'';$('#formTitle').textContent='✏️ Modifier le trade';
+  $('#date').value=t.date;$('#time').value=t.time||'';$('#pair').value=t.pair;
+  ['direction','session','setup','quality','emotion','plan'].forEach(k=>$('#'+k).value=t[k]);
+  $('#status').value=t.status||'closed';$('#resultR').value=t.resultR==null?'':t.resultR;
+  $('#rPlanned').value=t.rPlanned??'';$('#tags').value=(t.tags||[]).join(', ');$('#notes').value=t.notes||'';
+  CHK.forEach(id=>$('#'+id).checked=!!(t.checklist&&t.checklist.includes(id)));
+  $$('#mistakes input').forEach(i=>i.checked=!!(t.mistakes&&t.mistakes.includes(i.value)));
+  const has=!!curImg;$('#imgPrev').classList.toggle('hidden',!has);$('#rmImg').classList.toggle('hidden',!has);if(has)$('#imgPrev').src=curImg;
+  switchTab('tab-add');updScore();updPnl();updateGuards();
+}
+async function saveTrade(e,force=false){
+  if(e)e.preventDefault();
+  const date=$('#date').value,pair=$('#pair').value.trim().toUpperCase(),status=$('#status').value;
+  if(!date||!pair)return toast('⚠️ Date et paire requises');
+  let violated=false;
+  if(date===todayISO()){const b=guardInfo(date,editId).block;if(b){if(!force)return toast('⛔ '+b);violated=true}}
+  if(!editId&&!isPremium()&&state.trades.length>=FREE_TRADE_LIMIT){showPremiumModal('Limite de '+FREE_TRADE_LIMIT+' trades atteinte');return}
+  if(curImg&&!isPremium()&&state.trades.filter(t=>t.image&&t.id!==editId).length>=FREE_IMAGE_LIMIT){showPremiumModal('Captures illimitées');return}
+  let resultR=null;
+  if(status==='be')resultR=0;
+  else if(status==='closed'||status==='partial'){
+    const raw=$('#resultR').value.trim();if(!raw)return toast('⚠️ Résultat R requis');
+    resultR=num(raw);if(isNaN(resultR))return toast('⚠️ R invalide');
+  }
+  const checks=CHK.filter(id=>$('#'+id).checked),old=state.trades.find(t=>t.id===editId),rp=num($('#rPlanned').value);
+  const trade={id:editId||uid(),createdAt:old?old.createdAt:Date.now(),updatedAt:Date.now(),date,time:$('#time').value,pair,
+    direction:$('#direction').value,session:$('#session').value,setup:$('#setup').value,quality:$('#quality').value,emotion:$('#emotion').value,plan:$('#plan').value,
+    status,resultR,rPlanned:isNaN(rp)?null:rp,tags:$('#tags').value.split(',').map(s=>s.trim()).filter(Boolean).slice(0,10),
+    checklist:checks,checklistScore:checks.length,mistakes:$$('#mistakes input:checked').map(i=>i.value),image:curImg,notes:$('#notes').value.trim(),guardViolated:!!(old?.guardViolated||violated)};
+  const btn=$('#btnSave');btn.disabled=true;btn.textContent='⏳ Enregistrement…';
+  const snapshot=[...state.trades];
+  try{
+    if(editId)state.trades[state.trades.findIndex(t=>t.id===editId)]=trade;else state.trades.push(trade);
+    await saveState();resetForm();renderAll();toast(violated?'✅ Enregistré (hors garde-fou)':'✅ Trade enregistré');
+  }catch(err){state.trades=snapshot;toast('❌ Sauvegarde échouée : '+err.message)}
+  btn.textContent='💾 ENREGISTRER';updateGuards();
+}
+async function deleteTrade(id){
+  const i=state.trades.findIndex(t=>t.id===id);if(i<0)return;
+  const [rm]=state.trades.splice(i,1);await saveState();renderAll();
+  toast('🗑️ Trade supprimé',{duration:5000,undo:async()=>{state.trades.splice(i,0,rm);await saveState();renderAll();toast('✅ Restauré')}});
+}
+
+/* ── Import / export ── */
+function download(name,text,mime){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:mime}));a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+function exportJSON(){download(`ts-sniper-v5-${todayISO()}.json`,JSON.stringify({app:'TS V5',schemaVersion:5,settings:state.settings,trades:state.trades,reviews:state.reviews,playbook:state.playbook,exportedAt:new Date().toISOString()},null,2),'application/json');toast('📤 JSON exporté')}
+function exportCSV(){
+  const rows=sortT(state.trades).map(t=>[t.date,t.time,t.pair,t.direction,t.session,t.setup,t.quality,t.emotion,t.plan,t.status,t.resultR??'',tradePnl(t).toFixed(2),t.checklistScore||0]);
+  const head=['Date','Heure','Paire','Dir','Session','Setup','Qualité','Émotion','Plan','Statut','R','PnL','Score'].map(h=>T(h));
+  download(`ts-sniper-v5-${todayISO()}.csv`,'\uFEFF'+[head,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\n'),'text/csv');toast('📊 CSV exporté');
+}
+async function handleImport(file){
+  if(!file)return;let data;
+  try{data=JSON.parse(await file.text())}catch(e){return toast('❌ JSON invalide')}
+  if(!data||!Array.isArray(data.trades))return toast('❌ Champ "trades" manquant');
+  const valid=[];let rej=0;
+  data.trades.forEach(t=>{if(!t||!t.date||!t.pair){rej++;return}
+    const r=t.resultR==null?null:num(t.resultR);
+    valid.push({...t,id:t.id||uid(),createdAt:t.createdAt||Date.now(),updatedAt:Date.now(),resultR:isNaN(r)?null:r,checklist:Array.isArray(t.checklist)?t.checklist:[],tags:Array.isArray(t.tags)?t.tags:[]})});
+  const merge=confirm(`Import : ${valid.length} trade(s) valide(s)${rej?`, ${rej} rejeté(s)`:''}.\n\nOK = FUSIONNER avec l’existant\nAnnuler = REMPLACER tout`);
+  if(merge){const ids=new Set(state.trades.map(t=>t.id)),nw=valid.filter(t=>!ids.has(t.id));state.trades=[...state.trades,...nw];toast(`✅ ${nw.length} trade(s) fusionné(s)`)}
+  else{state.trades=valid;if(data.settings)state.settings={...DEF,...data.settings};toast(`✅ ${valid.length} trade(s) importé(s)`)}
+  if(data.reviews&&typeof data.reviews==='object')state.reviews=merge?{...data.reviews,...state.reviews}:{...data.reviews};
+  if(Array.isArray(data.playbook)){const ids=new Set(state.playbook.map(p=>p.id));state.playbook=[...state.playbook,...data.playbook.filter(p=>p&&p.name&&!ids.has(p.id))]}
+  if(!isPremium()&&(state.trades.length>FREE_TRADE_LIMIT||state.trades.filter(t=>t.image).length>FREE_IMAGE_LIMIT)){enforceFree();toast('ℹ️ Limites du plan gratuit appliquées à l’import',{duration:4500})}
+  try{await saveState()}catch(e){toast('❌ '+e.message)}renderAll();
+}
+function exportPDF(){
+  if(!requirePremium('Export PDF'))return;
+  const tr=sortT(filtered()),s=computeStats(tr);
+  const rows=tr.map(t=>`<tr><td>${fmtDate(t.date)}</td><td>${esc(t.pair)}</td><td>${esc(t.direction)}</td><td>${esc(t.setup)}</td><td>${esc(t.emotion)}</td><td>${t.resultR??'—'}R</td><td>${fmtUSD(tradePnl(t))}</td></tr>`).join('');
+  $('#print').innerHTML=`<h1>Sniper Journal — Rapport</h1><p>Généré le ${new Date().toLocaleDateString(LOC())} · Période : ${esc(filter)}</p><div class="sg"><div class="sb"><strong>Capital</strong><br>${fmtUSD(s.equity)}</div><div class="sb"><strong>PnL</strong><br>${fmtUSD(s.pnl)}</div><div class="sb"><strong>Trades</strong><br>${s.count}</div><div class="sb"><strong>Winrate</strong><br>${s.winRate.toFixed(1)}%</div><div class="sb"><strong>Profit Factor</strong><br>${s.pf===Infinity?'∞':s.pf.toFixed(2)}</div><div class="sb"><strong>Discipline</strong><br>${s.disc.toFixed(0)}%</div></div><table><thead><tr><th>Date</th><th>Paire</th><th>Dir</th><th>Setup</th><th>Émotion</th><th>R</th><th>PnL</th></tr></thead><tbody>${rows||'<tr><td colspan="7">Aucun trade</td></tr>'}</tbody></table>`;
+  window.print();
+}
+function weeklySummary(){
+  const tr=filterTrades(state.trades,'week'),s=computeStats(tr),bs=groupStats(tr,'setup')[0],be=pnlByEmo(tr).filter(e=>e.count).sort((a,b)=>b.pnl-a.pnl);
+  return `🎯 RÉSUMÉ HEBDO — ${fmtDate(weekKey())}\n━━━━━━━━━━━━━━━━━━━━━\nTrades : ${s.count} | Winrate : ${s.winRate.toFixed(1)}%\nPnL : ${fmtUSD(s.pnl)} | Discipline : ${s.disc.toFixed(0)}%\nProfit Factor : ${s.pf===Infinity?'∞':s.pf.toFixed(2)}\nExpectancy : ${s.expectancy.toFixed(2)}R\nSérie actuelle : ${s.streaks.current}\n\n🏆 Meilleur setup : ${bs?`${bs.name} (${fmtUSD(bs.pnl)})`:'—'}\n🎭 Émotion la + rentable : ${be[0]?`${be[0].name} (${fmtUSD(be[0].pnl)})`:'—'}\n🎭 Émotion la − rentable : ${be.length?`${be[be.length-1].name} (${fmtUSD(be[be.length-1].pnl)})`:'—'}\n⚠️ Hors garde-fou : ${s.viol}`;
+}
+
+/* ── Erreurs, challenge prop firm, imports ── */
+const MISTAKES=['Entrée trop tôt','Entrée tardive','SL déplacé','Sans stop-loss','Hors plan','Sur-risque','Pas de confirmation HTF','Sortie prématurée','Revenge trade','Autre'];
+function renderMistakes(){$('#mistakes').innerHTML=MISTAKES.map(m=>`<label><input type="checkbox" value="${esc(m)}"> ${esc(m)}</label>`).join('')}
+function mistakeRows(trades){const m={};trades.forEach(t=>(t.mistakes||[]).forEach(k=>addTo(m,k,t)));return toRows(m).sort((a,b)=>a.pnl-b.pnl)}
+function mistakeCost(trades){return Math.abs(trades.filter(t=>(t.mistakes||[]).length&&tradePnl(t)<0).reduce((x,t)=>x+tradePnl(t),0))}
+
+function renderChallenge(){
+  const el=$('#challenge');if(!el)return;
+  if(!isPremium()){el.innerHTML='';return}
+  const s=state.settings,cap=s.capital,start=s.challengeStart||'';
+  const trades=state.trades.filter(t=>t.status!=='canceled'&&(!start||t.date>=start));
+  const pnl=trades.reduce((x,t)=>x+tradePnl(t),0),equity=cap+pnl;
+  const target=cap*(s.profitTargetPct||0)/100,allowed=cap*s.ddMax/100,ddUsed=Math.max(0,cap-equity);
+  const g=guardInfo(todayISO()),days=new Set(trades.filter(t=>t.resultR!=null).map(t=>t.date)).size;
+  let left=null;
+  if(start&&s.challengeDays>0){const end=new Date(start+'T00:00');end.setDate(end.getDate()+s.challengeDays);left=Math.ceil((end-new Date())/86400000)}
+  let status='🟢 EN COURS',cls='good';
+  if(allowed>0&&ddUsed>=allowed){status='🔴 ÉCHOUÉ : drawdown max atteint';cls='bad'}
+  else if(target>0&&pnl>=target){status='🏆 OBJECTIF ATTEINT';cls='good'}
+  else if(left!==null&&left<0){status='🟠 DÉLAI DÉPASSÉ';cls='warn'}
+  const pc=(v,m)=>m>0?Math.min(100,Math.max(0,v/m*100)):0;
+  const bar=(v,m,c)=>`<div class="bar"><i style="width:${pc(v,m)}%;background:${c}"></i></div>`;
+  const risk=(v,m)=>pc(v,m)>=80?'var(--red)':pc(v,m)>=50?'var(--orange)':'var(--green)';
+  el.innerHTML=`<div class="cards" style="margin:0 0 12px">${card('Statut',status,cls)}${card('Profit',fmtUSD(pnl)+' ('+(pnl/cap*100).toFixed(2)+'%)',pnl>=0?'good':'bad')}${card('Jours restants',left===null?'—':Math.max(0,left),left!==null&&left<=5?'warn':'')}${card('Jours tradés',days)}</div>
+  <div><strong>Objectif de profit</strong> : ${fmtUSD(Math.max(0,pnl))} / ${fmtUSD(target)}${bar(pnl,target,'var(--gold)')}</div>
+  <div><strong>Drawdown max</strong> : ${fmtUSD(ddUsed)} / ${fmtUSD(allowed)}${bar(ddUsed,allowed,risk(ddUsed,allowed))}</div>
+  <div><strong>Perte du jour</strong> : ${fmtUSD(g.loss)} / ${fmtUSD(g.limit)}${bar(g.loss,g.limit,risk(g.loss,g.limit))}</div>
+  ${start?'':'<p class="small muted">Définis la date de début du challenge dans Réglages pour compter les jours et ne suivre que les trades du challenge.</p>'}`;
+}
+
+/*MT-START*/
+function csvRows(t){
+  const first=t.split(/\r?\n/).slice(0,5).join('\n');
+  const delim=[';','\t',','].map(d=>[d,first.split(d).length]).sort((a,b)=>b[1]-a[1])[0][0];
+  const rows=[];let row=[],cur='',q=false;
+  for(let i=0;i<t.length;i++){const c=t[i];
+    if(q){if(c==='"'){if(t[i+1]==='"'){cur+='"';i++}else q=false}else cur+=c}
+    else if(c==='"')q=true;
+    else if(c===delim){row.push(cur.trim());cur=''}
+    else if(c==='\n'||c==='\r'){if(c==='\r'&&t[i+1]==='\n')i++;row.push(cur.trim());rows.push(row);row=[];cur=''}
+    else cur+=c}
+  if(cur||row.length){row.push(cur.trim());rows.push(row)}
+  return rows;
+}
+function htmlRows(t){const d=new DOMParser().parseFromString(t,'text/html');return Array.from(d.querySelectorAll('tr')).map(tr=>Array.from(tr.children).map(c=>c.textContent.replace(/[\s\u00a0]+/g,' ').trim()))}
+function mtNum(x){x=String(x||'').replace(/[\s\u00a0]/g,'');if(/,/.test(x)&&!/\./.test(x))x=x.replace(',','.');else x=x.replace(/,/g,'');const v=parseFloat(x);return isNaN(v)?0:v}
+function mtDate(x){
+  x=String(x||'');let m=x.match(/(\d{4})[.\-\/](\d{2})[.\-\/](\d{2})[ T]+(\d{1,2}):(\d{2})/);
+  if(m)return{date:`${m[1]}-${m[2]}-${m[3]}`,time:`${m[4].padStart(2,'0')}:${m[5]}`,hour:+m[4]};
+  m=x.match(/(\d{2})[.\-\/](\d{2})[.\-\/](\d{4})[ T]+(\d{1,2}):(\d{2})/);
+  if(m)return{date:`${m[3]}-${m[2]}-${m[1]}`,time:`${m[4].padStart(2,'0')}:${m[5]}`,hour:+m[4]};
+  return null;
+}
+function parseMT(rows,riskUSD){
+  let hi=-1;
+  for(let i=0;i<rows.length;i++){const l=rows[i].map(c=>c.toLowerCase());
+    if(l.some(c=>/profit|p&l|pnl|gain/.test(c))&&l.some(c=>/^(symbol|item|instrument|paire)$/.test(c))&&l.some(c=>/^(type|direction|side|sens)$/.test(c))){hi=i;break}}
+  if(hi<0)return{error:'En-têtes non reconnus (colonnes Symbol/Item, Type et Profit attendues).'};
+  const H=rows[hi].map(c=>c.toLowerCase().replace(/\s+/g,' ').trim());
+  const idx=re=>H.map((c,i)=>re.test(c)?i:-1).filter(i=>i>=0);
+  const iSym=idx(/^(symbol|item|instrument|paire)$/)[0],iType=idx(/^(type|direction|side|sens)$/)[0];
+  const times=idx(/time|date|heure/),prices=idx(/^(price|prix)$/),iSL=idx(/^s ?\/ ?l$|^stop/)[0];
+  const iProfit=idx(/^(profit|p&l|pnl|gain)/).pop(),iComm=idx(/commission/)[0],iSwap=idx(/swap/)[0];
+  const iTicket=idx(/ticket|position|order|deal|^id$/)[0],iSize=idx(/size|volume|lots/)[0],iTP=idx(/^t ?\/ ?p$|^take/)[0];
+  const out=[];let skipped=0;
+  for(const r of rows.slice(hi+1)){
+    const typ=(r[iType]||'').toLowerCase().trim();
+    if(!/^(buy|sell|long|short|achat|vente)$/.test(typ)){if(r.length>3)skipped++;continue}
+    const open=mtDate(r[times[0]]);if(!open){skipped++;continue}
+    const dir=/buy|long|achat/.test(typ)?'LONG':'SHORT';
+    const oP=prices.length?mtNum(r[prices[0]]):0,cP=prices.length>1?mtNum(r[prices[1]]):0,sl=iSL!=null?mtNum(r[iSL]):0,tp=iTP!=null?mtNum(r[iTP]):0;
+    const net=mtNum(r[iProfit])+(iComm!=null?mtNum(r[iComm]):0)+(iSwap!=null?mtNum(r[iSwap]):0);
+    let R;
+    if(sl>0&&oP>0&&cP>0&&Math.abs(oP-sl)>0)R=((dir==='LONG'?cP-oP:oP-cP))/Math.abs(oP-sl);
+    else R=riskUSD>0?net/riskUSD:0;
+    R=Math.round(R*100)/100;
+    const h=open.hour,ses=h<7?'Asie':h<13?'Londres':h<22?'New York':'Asie';
+    const tk=iTicket!=null?String(r[iTicket]||'').replace(/\W/g,''):'';
+    out.push({id:tk?'mt-'+tk:'imp-'+[String(r[iSym]||'').toUpperCase(),open.date,open.time,dir,oP].join('|'),createdAt:Date.now(),updatedAt:Date.now(),date:open.date,time:open.time,pair:String(r[iSym]||'').toUpperCase(),
+      direction:dir,session:ses,setup:'Autre',quality:'B',emotion:'Calme',plan:'OUI',status:Math.abs(R)<0.05?'be':'closed',resultR:R,rPlanned:(sl>0&&oP>0&&tp>0&&Math.abs(oP-sl)>0)?Math.round(Math.abs(tp-oP)/Math.abs(oP-sl)*100)/100:null,
+      tags:['mt-import'],checklist:[],checklistScore:0,mistakes:[],image:'',guardViolated:false,
+      notes:`Importé MT4/MT5${tk?' · ticket '+tk:''}${iSize!=null?' · '+mtNum(r[iSize])+' lot(s)':''} · P&L ${net.toFixed(2)}`});
+  }
+  return{trades:out,skipped};
+}
+/*MT-END*/
+const PDFJS_V='3.11.174';
+function loadScript(src){return new Promise((res,rej)=>{const e=document.createElement('script');e.src=src;e.onload=res;e.onerror=()=>rej(new Error('Chargement impossible (connexion ?)'));document.head.appendChild(e)})}
+async function pdfRows(buf){
+  if(!window.pdfjsLib){await loadScript('https://cdn.jsdelivr.net/npm/pdfjs-dist@'+PDFJS_V+'/build/pdf.min.js');pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@'+PDFJS_V+'/build/pdf.worker.min.js'}
+  const pdf=await pdfjsLib.getDocument({data:buf}).promise,rows=[];
+  for(let p=1;p<=pdf.numPages;p++){
+    const tc=await (await pdf.getPage(p)).getTextContent(),lines=[];
+    tc.items.forEach(it=>{const t=(it.str||'').trim();if(!t)return;const y=it.transform[5],x=it.transform[4];let l=lines.find(L=>Math.abs(L.y-y)<=2.5);if(!l){l={y,items:[]};lines.push(l)}l.items.push({x,t})});
+    lines.sort((a,b)=>b.y-a.y).forEach(l=>{
+      const c=l.items.sort((a,b)=>a.x-b.x).map(i=>i.t),m=[];
+      for(let i=0;i<c.length;i++){
+        if(/^\d{4}[.\-\/]\d{2}[.\-\/]\d{2}$/.test(c[i])&&/^\d{1,2}:\d{2}(:\d{2})?$/.test(c[i+1]||'')){m.push(c[i]+' '+c[i+1]);i++}
+        else m.push(c[i]);
+      }
+      if(m.length)rows.push(m);
+    });
+  }
+  return rows;
+}
+function normHeader(rows){
+  const canon=l=>{
+    if(/^(symbol|symbole|pair|paire|instrument|ticker|item|market|actif|asset)$/.test(l))return'Symbol';
+    if(/^(type|side|direction|action|sens|ordertype)$/.test(l))return'Type';
+    if(/^(profit|netprofit|p&l|pnl|pl|gain|realizedp&l|realizedpnl|netp&l|netpnl|profit\/loss|profitloss|resultat|résultat)$/.test(l))return'Profit';
+    if(/^(s\/l|sl|stop|stoploss)$/.test(l))return'S/L';
+    if(/^(t\/p|tp|takeprofit|target)$/.test(l))return'T/P';
+    if(/^(size|volume|lot|lots|qty|quantity|taille)$/.test(l))return'Size';
+    if(/^(ticket|position|order|deal|id|orderid|positionid)$/.test(l))return'Ticket';
+    if(/(close|exit|closing|closed).*(time|date)|(time|date).*(close|exit)/.test(l))return'Close Time';
+    if(/(open|entry|opened|opening).*(time|date)|(time|date).*(open|entry)|^(time|date)$/.test(l))return'Open Time';
+    if(/(close|exit|closing).*price|price.*(close|exit)|^(close|exit)$/.test(l))return'Price';
+    if(/(open|entry).*price|price.*(open|entry)|^(open|entry)$|^price$/.test(l))return'Price';
+    return null;
+  };
+  for(let i=0;i<Math.min(rows.length,80);i++){
+    const C=rows[i].map(c=>canon(String(c).toLowerCase().replace(/[\s_\-]+/g,'')));
+    if(C.includes('Symbol')&&C.includes('Type')&&C.includes('Profit')){rows[i]=rows[i].map((c,k)=>C[k]||c);break}
+  }
+  return rows;
+}
+function jsonRows(j){
+  let arr=Array.isArray(j)?j:null;
+  if(!arr&&j&&typeof j==='object'){const k=Object.keys(j).find(k=>Array.isArray(j[k])&&j[k].length&&j[k][0]&&typeof j[k][0]==='object');if(k)arr=j[k]}
+  if(!arr||!arr.length)return[];
+  const flat=o=>{const r={};Object.entries(o||{}).forEach(([k,v])=>{if(v&&typeof v==='object'&&!Array.isArray(v))Object.entries(v).forEach(([k2,v2])=>{r[k+' '+k2]=v2});else r[k]=v});return r};
+  const objs=arr.filter(o=>o&&typeof o==='object').map(flat),keys=[...new Set(objs.flatMap(o=>Object.keys(o)))];
+  return [keys,...objs.map(o=>keys.map(k=>o[k]==null?'':String(o[k])))];
+}
+function isAppBackup(j){return !!(j&&Array.isArray(j.trades)&&j.trades.length&&j.trades[0]&&j.trades[0].date&&j.trades[0].pair)}
+function parseLoose(rows,riskUSD){
+  const out=[];let skipped=0;
+  const isNum=x=>/^-?[\d\s.,]+$/.test(x)&&/\d/.test(x);
+  for(const c of rows){
+    if(c.length<8)continue;
+    const ti=c.findIndex(x=>/^(buy|sell|achat|vente)$/i.test(x));if(ti<0)continue;
+    const dts=[];c.forEach((x,i)=>{if(mtDate(x))dts.push(i)});
+    if(dts.length<2||dts[1]<=ti){skipped++;continue}
+    const sym=c.find((x,i)=>i!==ti&&/^[A-Za-z][A-Za-z0-9._#\-]{2,}$/.test(x)&&!/^(buy|sell|achat|vente)$/i.test(x));if(!sym){skipped++;continue}
+    const between=c.slice(ti+1,dts[1]).filter(isNum).map(mtNum),after=c.slice(dts[1]+1).filter(isNum).map(mtNum);
+    if(!after.length){skipped++;continue}
+    const open=mtDate(c[dts[0]]),dir=/buy|achat/i.test(c[ti])?'LONG':'SHORT',oP=between[1]||0,sl=between[2]||0,tp=between[3]||0,cP=after[0]||0,net=after.slice(1).reduce((a,x)=>a+x,0);
+    let R;
+    if(sl>0&&oP>0&&cP>0&&oP!==sl)R=(dir==='LONG'?cP-oP:oP-cP)/Math.abs(oP-sl);else R=riskUSD>0?net/riskUSD:0;
+    R=Math.round(R*100)/100;
+    const h=open.hour,tk=isNum(c[0])&&String(c[0]).replace(/\D/g,'').length>=5?String(c[0]).replace(/\W/g,''):'';
+    out.push({id:tk?'mt-'+tk:'imp-'+[sym.toUpperCase(),open.date,open.time,dir,oP].join('|'),createdAt:Date.now(),updatedAt:Date.now(),date:open.date,time:open.time,pair:sym.toUpperCase(),
+      direction:dir,session:h<7?'Asie':h<13?'Londres':h<22?'New York':'Asie',setup:'Autre',quality:'B',emotion:'Calme',plan:'OUI',status:Math.abs(R)<0.05?'be':'closed',resultR:R,
+      rPlanned:(sl>0&&oP>0&&tp>0&&oP!==sl)?Math.round(Math.abs(tp-oP)/Math.abs(oP-sl)*100)/100:null,tags:['import'],checklist:[],checklistScore:0,mistakes:[],image:'',guardViolated:false,
+      notes:'Importé MT4/MT5 · P&L '+net.toFixed(2)});
+  }
+  return{trades:out,skipped};
+}
+async function importMTFile(file){
+  const name=(file.name||'').toLowerCase(),buf=await file.arrayBuffer(),u=new Uint8Array(buf);
+  let res,rows=null;
+  try{
+    if(/\.pdf$/.test(name)||String.fromCharCode(u[0],u[1],u[2],u[3],u[4])==='%PDF-'){
+      toast('📄 Lecture du PDF…',{duration:20000});
+      rows=await pdfRows(buf.slice(0));
+      if(!rows.length)return toast('Lecture du PDF impossible : utilise le rapport HTML ou CSV.',{duration:5000});
+      res=parseMT(normHeader(rows),riskAmt());
+      if(res.error||!res.trades.length){const lo=parseLoose(rows,riskAmt());if(lo.trades.length)res=lo}
+    }else{
+      let text;
+      if(u[0]===0xFF&&u[1]===0xFE)text=new TextDecoder('utf-16le').decode(buf);
+      else if(u[0]===0xFE&&u[1]===0xFF)text=new TextDecoder('utf-16be').decode(buf);
+      else text=new TextDecoder('utf-8').decode(buf);
+      text=text.replace(/^\uFEFF/,'');
+      if(/\.json$/.test(name)||/^\s*[\[{]/.test(text)){
+        let j;try{j=JSON.parse(text)}catch(e){return toast('❌ JSON invalide')}
+        if(isAppBackup(j)){$('#importModal').classList.remove('show');return handleImport(file)}
+        rows=jsonRows(j);if(!rows.length)return toast('❌ Aucun trade reconnu dans ce fichier',{duration:4500});
+        res=parseMT(normHeader(rows),riskAmt());
+      }else{
+        rows=(/\.html?$/.test(name)||/<table/i.test(text))?htmlRows(text):csvRows(text);
+        res=parseMT(normHeader(rows),riskAmt());
+        if(res.error||!res.trades.length){const lo=parseLoose(rows,riskAmt());if(lo.trades.length)res=lo}
+      }
+    }
+  }catch(e){return toast('❌ '+(e.message||'Fichier illisible'),{duration:5000})}
+  if(res.error)return toast('❌ '+res.error,{duration:5000});
+  if(!res.trades.length)return toast('⚠️ Aucun trade clôturé trouvé dans ce fichier',{duration:4000});
+  if(!confirm(`MT4/MT5 : ${res.trades.length} trade(s) détecté(s)${res.skipped?`, ${res.skipped} ligne(s) ignorée(s)`:''}.\n\nImporter dans ton journal ?`))return;
+  const ids=new Set(state.trades.map(t=>t.id));
+  let nw=res.trades.filter(t=>!ids.has(t.id)),cut=false;
+  if(!isPremium()){const room=Math.max(0,FREE_TRADE_LIMIT-state.trades.length);if(nw.length>room){nw=nw.slice(0,room);cut=true}}
+  state.trades=[...state.trades,...nw];
+  try{await saveState()}catch(e){toast('❌ '+e.message);return}
+  renderAll();$('#importModal').classList.remove('show');
+  toast(`✅ ${nw.length} trade(s) importé(s)${cut?' (limite du plan gratuit atteinte)':''}`,{duration:4500});
+  if(nw.length)switchTab('tab-journal');
+  if(cut)setTimeout(()=>showPremiumModal('Trades illimités'),800);
+}
+function bigImage(file,max){return new Promise(res=>{const u=URL.createObjectURL(file),i=new Image();i.onload=()=>{const c=document.createElement('canvas'),k=Math.min(2,max/Math.max(i.width,i.height));c.width=i.width*k;c.height=i.height*k;c.getContext('2d').drawImage(i,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL('image/png'))};i.onerror=()=>res('');i.src=u})}
+async function ocrTV(file){
+  if(!window.Tesseract)await loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js');
+  const big=await bigImage(file,2000);if(!big)throw new Error('image');
+  const {data}=await Promise.race([Tesseract.recognize(big,'eng'),new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),90000))]);
+  const txt=data.text||'',up=txt.toUpperCase(),out={};
+  const pm=up.match(/\b(XAU\/?USD|XAG\/?USD|BTC\/?USD|ETH\/?USD|US30|US100|US500|NAS100|SPX500|GER40|DE40|USOIL|UKOIL|[A-Z]{3}\/?(?:USD|JPY|GBP|EUR|CHF|CAD|AUD|NZD))\b/);
+  if(pm)out.pair=pm[1].replace('/','');
+  const nl=(txt.match(/\blong\b/gi)||[]).length,ns=(txt.match(/\bshort\b/gi)||[]).length;
+  if(nl!==ns)out.direction=nl>ns?'LONG':'SHORT';
+  const rr=txt.match(/(?:risk\s*\/?\s*reward(?:\s*ratio)?|r\s*[:\/]\s*r|\brr\b)\D{0,8}(\d+(?:[.,]\d+)?)/i);
+  if(rr)out.rr=parseFloat(rr[1].replace(',','.'));
+  return out;
+}
+async function importTV(file){
+  if(!isPremium()&&state.trades.filter(t=>t.image).length>=FREE_IMAGE_LIMIT){showPremiumModal('Captures illimitées');return}
+  const img=await processImage(file);if(!img)return toast('❌ Image illisible');
+  resetForm();curImg=img;
+  $('#imgPrev').src=img;$('#imgPrev').classList.remove('hidden');$('#rmImg').classList.remove('hidden');
+  $('#tags').value='tradingview';$('#notes').value='Capture TradingView';
+  $('#importModal').classList.remove('show');switchTab('tab-add');
+  toast('🔎 Lecture de la capture…',{duration:60000});
+  try{
+    const o=await ocrTV(file);
+    if(o.pair)$('#pair').value=o.pair;
+    if(o.direction)$('#direction').value=o.direction;
+    if(o.rr>0)$('#rPlanned').value=o.rr;
+    $('#notes').value='Capture TradingView : champs détectés automatiquement, à vérifier.';
+    toast('✅ Capture lue : vérifie les champs avant d’enregistrer',{duration:5000});
+  }catch(e){toast('📈 Capture ajoutée : complète les détails du trade',{duration:4000})}
+}
+
+function renderAll(){updatePlanBadge();renderPlaybook();renderSettings();updateGuards();renderStats();renderJournal();renderPsycho();updStorage()}
+
+/* ── Événements ── */
+function bind(){
+  renderMistakes();
+  $$('nav button').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
+  $('#fab').onclick=()=>switchTab('tab-add');
+  $('#filterStats').onchange=e=>setFilter(e.target.value);$('#filterJournal').onchange=e=>setFilter(e.target.value);
+  $('#tradeForm').onsubmit=saveTrade;$('#btnReset').onclick=resetForm;
+  ['date','time','resultR','status'].forEach(id=>$('#'+id).addEventListener('input',()=>{updateGuards();updPnl()}));
+  CHK.forEach(id=>$('#'+id).onchange=updScore);
+  $('#image').onchange=async e=>{const f=e.target.files[0];if(!f)return;
+    if(!isPremium()&&!curImg&&state.trades.filter(t=>t.image&&t.id!==editId).length>=FREE_IMAGE_LIMIT){showPremiumModal('Captures illimitées');e.target.value='';return}
+    curImg=await processImage(f);if(curImg){$('#imgPrev').src=curImg;$('#imgPrev').classList.remove('hidden');$('#rmImg').classList.remove('hidden')}else toast('❌ Image illisible')};
+  $('#rmImg').onclick=()=>{curImg='';$('#imgPrev').classList.add('hidden');$('#rmImg').classList.add('hidden');$('#image').value=''};
+  $('#btnOverride').onclick=()=>{if(confirm('Logger malgré le garde-fou ? Ce trade sera marqué comme violation.'))saveTrade(null,true)};
+  $('#journalList').onclick=e=>{
+    const b=e.target.closest('[data-a]');if(!b)return;const t=state.trades.find(x=>x.id===b.dataset.id);if(!t)return;
+    if(b.dataset.a==='edit')fillForm(t);
+    else if(b.dataset.a==='delete'){if(confirm('Supprimer ce trade ?'))deleteTrade(t.id)}
+    else if(b.dataset.a==='image'){$('#modalImg').src=t.image;$('#imgModal').classList.add('show')}
+  };
+  $('#closeImg').onclick=()=>$('#imgModal').classList.remove('show');
+  $('#closeSum').onclick=()=>$('#sumModal').classList.remove('show');
+  $('#copySum').onclick=async()=>{try{await navigator.clipboard.writeText($('#sumText').value);toast('📋 Copié')}catch(e){$('#sumText').select();toast('Sélectionné : copie manuelle')}};
+  ['sumModal','imgModal','premiumModal','accountModal','legalModal','tutoModal'].forEach(id=>{const m=$('#'+id);m.onclick=e=>{if(e.target===m)m.classList.remove('show')}});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')$$('.modal.show').forEach(m=>m.classList.remove('show'))});
+  $('#btnWeek').onclick=()=>{$('#sumText').value=T(weeklySummary());$('#sumModal').classList.add('show')};
+  $('#saveSettings').onclick=async()=>{
+    const v=id=>num($('#'+id).value);
+    state.settings={capital:v('capital')>0?v('capital'):DEF.capital,riskPct:v('riskPct')>=0?v('riskPct'):DEF.riskPct,ddMax:v('ddMax')>=0?v('ddMax'):DEF.ddMax,
+      dailyLossPct:v('dailyLossPct')>=0?v('dailyLossPct'):DEF.dailyLossPct,maxTradesDay:v('maxTradesDay')>=1?Math.floor(v('maxTradesDay')):DEF.maxTradesDay,
+      dailyRGoal:v('dailyRGoal')||DEF.dailyRGoal,weeklyRGoal:v('weeklyRGoal')||DEF.weeklyRGoal,
+      profitTargetPct:v('profitTargetPct')>=0?v('profitTargetPct'):DEF.profitTargetPct,challengeDays:v('challengeDays')>=0?Math.floor(v('challengeDays')):DEF.challengeDays,challengeStart:$('#challengeStart').value||''};
+    try{await saveState();renderAll();toast('⚙️ Enregistré')}catch(e){toast('❌ '+e.message)}
+  };
+  $('#saveReview').onclick=async()=>{
+    state.reviews[weekKey()]={dominant:$('#rvDom').value,best:$('#rvBest').value,worst:$('#rvWorst').value,lesson:$('#rvLesson').value};
+    try{await saveState();renderPsycho();toast('🧠 Revue enregistrée')}catch(e){toast('❌ '+e.message)}
+  };
+  $$('[data-oauth]').forEach(b=>b.onclick=()=>oauth(b.dataset.oauth));
+  $('#authSubmit').onclick=doAuth;$('#authSwitch').onclick=switchAuthView;$('#authGuest').onclick=startGuest;$('#btnAccount').onclick=openAccount;$('#accTheme').onclick=toggleTheme;$('#accLang').onclick=toggleLang;$('#ldLang').onclick=toggleLang;$('#accAdmin').onclick=()=>{$('#accountModal').classList.remove('show');openAdmin()};$('#admRefresh').onclick=loadAdmin;$('#authForgot').onclick=forgotPw;$('#pwSave').onclick=savePw;$('#btnTuto').onclick=openTuto;$('#btnLegal').onclick=()=>openLegal('terms');$('#closeLegal').onclick=()=>$('#legalModal').classList.remove('show');$('#btnDelAcc').onclick=openDel;$('#aiGen').onclick=aiGenerate;$('#aiWeek').onchange=aiShow;document.addEventListener('click',e=>{const a=e.target.closest('[data-legal]');if(a){e.preventDefault();openLegal(a.dataset.legal)}});$('#admSearch').oninput=renderAdmin;$('#admUsers').onclick=e=>{const b=e.target.closest('[data-m]');if(b)admSet(b.dataset.adm,b.dataset.m)};$('#ldTheme').onclick=toggleTheme;applyTheme(document.documentElement.getAttribute('data-theme')||'dark');applyLang(document.documentElement.getAttribute('lang')==='en'?'en':'fr',true);$('#accClose').onclick=()=>$('#accountModal').classList.remove('show');$('#accLogout').onclick=()=>{$('#accountModal').classList.remove('show');logout()};$('#accUpgrade').onclick=()=>{$('#accountModal').classList.remove('show');showPremiumModal()};$('#authBack').onclick=closeAuth;$$('[data-go]').forEach(b=>b.onclick=()=>{const g=b.dataset.go;if(g==='guest')startGuest();else openAuth(g)});
+  $('#authPassword').addEventListener('keydown',e=>{if(e.key==='Enter')doAuth()});
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshPlan()});
+  $('#closePremium').onclick=()=>$('#premiumModal').classList.remove('show');
+  $('#exPdf').onclick=exportPDF;
+  $('#btnImportJ').onclick=$('#btnImportS').onclick=()=>$('#importModal').classList.add('show');
+  $('#closeImport').onclick=()=>$('#importModal').classList.remove('show');
+  $('#mtFile').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(f)await importMTFile(f)};
+  $('#tvFile').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(f)await importTV(f)};
+  (()=>{const m=$('#importModal');m.onclick=e=>{if(e.target===m)m.classList.remove('show')}})();
+  document.addEventListener('click',e=>{if(e.target.closest('.lock-overlay'))showPremiumModal()},true);
+  $('#pbAdd').onclick=async()=>{
+    if(!requirePremium('Playbook'))return;
+    const name=$('#pbName').value.trim();if(!name)return toast('⚠️ Nom requis');
+    state.playbook.push({id:uid(),name,desc:$('#pbDesc').value.trim(),createdAt:Date.now()});
+    $('#pbName').value='';$('#pbDesc').value='';
+    try{await saveState()}catch(e){toast('❌ '+e.message)}renderPlaybook();toast('📚 Setup ajouté');
+  };
+  $('#exJson').onclick=exportJSON;$('#exCsv').onclick=exportCSV;
+  $('#imBtn').onclick=()=>$('#imFile').click();
+  $('#imFile').onchange=async e=>{await handleImport(e.target.files[0]);e.target.value=''};
+  $('#hmPrev').onclick=()=>{hmDate=new Date(hmDate.getFullYear(),hmDate.getMonth()-1,1);renderHeatmap()};
+  $('#hmNext').onclick=()=>{hmDate=new Date(hmDate.getFullYear(),hmDate.getMonth()+1,1);renderHeatmap()};
+  const c=$('#eq'),tip=$('#tip');
+  const move=e=>{
+    if(!c._p)return;const r=c.getBoundingClientRect(),mx=e.clientX-r.left,{pts,X}=c._p;let ci=-1,md=1e9;
+    pts.forEach((p,i)=>{const d=Math.abs(X(i)-mx);if(d<md){md=d;ci=i}});
+    if(ci<1||md>30){tip.style.display='none';return}
+    const p=pts[ci],t=p.trade;
+    tip.innerHTML=`<strong>${esc(t.pair)}</strong> ${esc(t.direction)}<br>${fmtDate(t.date)} · ${esc(t.time||'')}<br>${t.resultR??'—'}R · ${fmtUSD(tradePnl(t))}<br>Capital : ${fmtUSD(p.equity)}`;
+    tip.style.display='block';tip.style.left=Math.max(0,Math.min(mx+10,r.width-190))+'px';tip.style.top='20px';
+  };
+  c.addEventListener('pointermove',move);c.addEventListener('pointerdown',move);c.addEventListener('pointerleave',()=>tip.style.display='none');
+  window.addEventListener('resize',()=>{if($('#tab-stats').classList.contains('active')){drawEquity(filtered());drawRDist(filtered())}});
+  window.addEventListener('beforeunload',e=>{if(!editId&&($('#pair').value||$('#resultR').value||$('#notes').value)){e.preventDefault();e.returnValue=''}});
+  setInterval(()=>{if($('#tab-add').classList.contains('active'))updateGuards()},15000);
+}
+
+document.addEventListener('DOMContentLoaded',async()=>{
+  bind();
+  $('#date').value=todayISO();$('#time').value=nowTime();
+  sb=await initSupabase();
+  if(!sb){await startGuest();return}
+  sb.auth.onAuthStateChange((ev,s)=>{
+    session=s;
+    if(ev==='PASSWORD_RECOVERY')setTimeout(()=>$('#pwModal').classList.add('show'),600);
+    if(s?.user){if(loggedId!==s.user.id){loggedId=s.user.id;setTimeout(()=>onLoggedIn(s.user),0)}}
+    else if(ev==='INITIAL_SESSION'||ev==='SIGNED_OUT'){loggedId=null;showAuth()}
+  });
+});
+</script>
+</body>
+</html>
